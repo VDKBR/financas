@@ -66,6 +66,17 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
   </div>
 </div>
 
+<div id="ws-gate" class="fixed inset-0 z-50 bg-[#0a0f16] items-center justify-center p-6" style="display:none">
+  <div class="card max-w-sm w-full text-center space-y-5">
+    <div class="mx-auto p-3 rounded-2xl bg-teal-400/10 text-teal-300 w-fit"><i data-lucide="users" class="w-8 h-8"></i></div>
+    <div><h2 class="text-xl font-extrabold">Seu espaço de dados</h2><p class="text-sm text-slate-400 mt-1">Você entrou como <b id="ws-who" class="text-slate-200"></b> e ainda não tem dados aqui.</p></div>
+    <button class="btn bg-emerald-600" onclick="cloudCreateWs()">Criar meu espaço (começar do zero)</button>
+    <button class="btn bg-white/10" onclick="cloudRecheck()">Fui convidado: verificar convite</button>
+    <button class="text-xs text-slate-500 underline" onclick="cloudLogout()">Sair</button>
+    <p id="ws-msg" class="text-xs text-rose-400"></p>
+  </div>
+</div>
+
 <!-- MENU LATERAL -->
 <aside class="w-full md:w-64 md:min-h-screen shrink-0 border-b md:border-b-0 md:border-r border-white/5 p-4 flex flex-col justify-between bg-[#0d131c]">
   <div>
@@ -79,6 +90,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <button class="nav-btn" data-tab="fixed"><i data-lucide="repeat" class="w-5 h-5 text-amber-400"></i>Gastos fixos</button>
       <button class="nav-btn" data-tab="card"><i data-lucide="credit-card" class="w-5 h-5 text-indigo-400"></i>Cartão de crédito</button>
       <button class="nav-btn" data-tab="cards"><i data-lucide="id-card" class="w-5 h-5 text-indigo-300"></i>Meus cartões</button>
+      <button class="nav-btn" id="nav-share" data-tab="share" style="display:none"><i data-lucide="users" class="w-5 h-5 text-teal-300"></i>Compartilhar</button>
       <button class="nav-btn" data-tab="accounts"><i data-lucide="landmark" class="w-5 h-5 text-sky-400"></i>Contas e saldos</button>
       <button class="nav-btn" data-tab="projections"><i data-lucide="trending-up" class="w-5 h-5 text-cyan-400"></i>Projeção 12 meses</button>
       <button class="nav-btn" data-tab="invest"><i data-lucide="sprout" class="w-5 h-5 text-violet-400"></i>Aplicações (CDB)</button>
@@ -254,6 +266,19 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
     </div>
   </section>
 
+  <!-- ============ COMPARTILHAR ============ -->
+  <section id="tab-share" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Compartilhar dados</h2><p class="text-slate-400 text-sm">Quem está na lista abaixo vê e edita os mesmos dados. Quem não está usa um espaço próprio, separado.</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#5eead4"><h3 class="font-semibold mb-4">Convidar colaborador</h3>
+        <form id="share-form" onsubmit="cloudInvite(event)" class="space-y-4"><div><label class="lbl">E-mail Google da pessoa</label><input class="inp" type="email" id="invite-email" required placeholder="pessoa@gmail.com"></div>
+          <button class="btn bg-teal-600"><i data-lucide="user-plus" class="w-4 h-4"></i>Convidar</button>
+          <p class="text-xs text-slate-500">A pessoa também precisa estar na lista de e-mails autorizados nas regras do Firebase. Ao entrar com esse e-mail, ela cai direto neste espaço.</p></form>
+        <p id="share-note" class="text-sm text-slate-400"></p></div>
+      <div class="card lg:col-span-2"><h3 class="font-semibold mb-4">Pessoas neste espaço</h3><div id="share-list" class="space-y-2.5"></div><div id="share-switch" class="mt-6 max-w-sm" style="display:none"></div></div>
+    </div>
+  </section>
+
   <!-- ============ MEUS CARTÕES ============ -->
   <section id="tab-cards" class="tab hidden space-y-6">
     <div><h2 class="text-2xl font-extrabold">Meus cartões</h2><p class="text-slate-400 text-sm">Cadastre seus cartões com o nome que quiser. Eles aparecem ao lançar compras, ao importar faturas e nos filtros.</p></div>
@@ -421,11 +446,13 @@ function normalize(s) {
 }
 // Pontes usadas pela sincronização online (módulo no fim do arquivo)
 function cloudGet() { return state; }
-function cloudApply(obj) { state = normalize(obj); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} renderAll(); }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Não foi possível salvar neste navegador.', true); } renderAll(); if (window.cloudPush) window.cloudPush(); }
-function load() { try { const d = localStorage.getItem(KEY); if (d) state = JSON.parse(d); } catch (e) {} state = normalize(state); }
+function cloudApply(obj) { state = normalize(obj); renderAll(); }
+// Limpa a tela ao trocar de conta/espaço, para nunca misturar dados de pessoas diferentes
+function cloudReset() { state = normalize(blank()); try { localStorage.removeItem(KEY); } catch (e) {} viewYM = invoiceMonth(today()); cardView = null; renderAll(); }
+function save() { try { if (!window.CLOUD_ON) localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Não foi possível salvar neste navegador.', true); } renderAll(); if (window.cloudPush) window.cloudPush(); }
+function load() { try { const d = localStorage.getItem(KEY); if (d && !window.CLOUD_ON) state = JSON.parse(d); } catch (e) {} state = normalize(state); }
 
-function resetData() { if (confirm(window.CLOUD_ON ? 'Apagar TODOS os dados online (de todos que usam este site)?' : 'Apagar TODOS os dados?')) { state = normalize(blank()); save(); toast('Dados apagados.'); } }
+function resetData() { if (confirm(window.CLOUD_ON ? 'Apagar TODOS os dados deste espaço? Todos os colaboradores dele perdem os dados.' : 'Apagar TODOS os dados?')) { state = normalize(blank()); save(); toast('Dados apagados.'); } }
 function exportData() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
@@ -434,7 +461,7 @@ function exportData() {
 }
 function importData(ev) {
   const f = ev.target.files[0]; if (!f) return;
-  if (window.CLOUD_ON && !confirm('Restaurar este backup substitui os dados online de todos que usam o site. Continuar?')) { ev.target.value = ''; return; }
+  if (window.CLOUD_ON && !confirm('Restaurar este backup substitui os dados deste espaço (inclusive para os colaboradores). Continuar?')) { ev.target.value = ''; return; }
   const r = new FileReader();
   r.onload = () => { try { state = normalize(JSON.parse(r.result)); save(); toast('Backup restaurado!'); } catch (e) { toast('Arquivo de backup inválido.', true); } };
   r.readAsText(f); ev.target.value = '';
@@ -1046,40 +1073,89 @@ window.onload = () => {
 const cfg = window.FIREBASE_CONFIG, cloud = cfg && cfg.apiKey && !cfg.apiKey.startsWith('COLE') && location.protocol.startsWith('http');
 if (cloud) {
   window.CLOUD_ON = true;
-  const el = id => document.getElementById(id), setSt = t => { const e = el('cloud-status'); if (e) e.textContent = t; };
-  el('auth-gate').style.display = 'flex';
-  const V = '10.12.2', B = `https://www.gstatic.com/firebasejs/${V}/`;
-  const [{ initializeApp }, { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut }, { getFirestore, collection, doc, setDoc, onSnapshot, serverTimestamp }] =
+  const el = id => document.getElementById(id), setSt = t => { const e = el('cloud-status'); if (e) e.textContent = t; }, say = (m, bad) => window.toast && window.toast(m, bad), show = (id, on) => { el(id).style.display = on ? 'flex' : 'none'; };
+  show('auth-gate', true);
+  const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const [{ initializeApp }, { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut }, { getFirestore, collection, doc, setDoc, getDocs, query, where, updateDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp }] =
     await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
   const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
-  // Cada parte dos dados é um documento; só o que mudou é enviado.
+  // Cada espaço (workspaces/ID) tem seus dados e sua lista de membros. Cada parte dos dados é um documento; só o que mudou é enviado.
   const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards'];
-  let last = {}, ready = false, unsub = null, user = null;
+  let last = {}, ready = false, unsub = null, unsubWs = null, user = null, wid = null, ws = null, spaces = [];
+  const me = () => user.email.toLowerCase();
+  const stop = () => { if (unsub) unsub(); if (unsubWs) unsubWs(); unsub = unsubWs = null; ready = false; wid = null; ws = null; last = {}; };
+
   window.cloudLogin = async () => {
     const p = new GoogleAuthProvider();
     try { await signInWithPopup(auth, p); }
     catch (e) { if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, p); else if (!/popup-closed|cancelled/.test(e.code || '')) el('auth-msg').textContent = 'Não foi possível entrar: ' + (e.code || e.message); }
   };
-  window.cloudLogout = () => signOut(auth);
+  window.cloudLogout = async () => { stop(); cloudReset(); await signOut(auth); };
+
   window.cloudPush = async () => {
-    if (!ready || !user) return; const s = cloudGet();
-    for (const k of KEYS) { const v = JSON.stringify(s[k] ?? null); if (last[k] === v) continue; last[k] = v;
-      try { await setDoc(doc(db, 'households', 'main', 'data', k), { v, by: user.email, t: serverTimestamp() }); setSt('☁ Sincronizado · ' + user.email); }
+    if (!ready || !user || !wid) return; const w = wid, s = cloudGet();
+    for (const k of KEYS) { if (w !== wid) return; const v = JSON.stringify(s[k] ?? null); if (last[k] === v) continue; last[k] = v;
+      try { await setDoc(doc(db, 'workspaces', w, 'data', k), { v, by: user.email, t: serverTimestamp() }); setSt('☁ Sincronizado · ' + user.email); }
       catch (e) { delete last[k]; setSt('⚠ Não foi possível salvar online (' + (e.code === 'permission-denied' ? 'sem permissão' : 'sem internet') + ')'); } }
   };
-  onAuthStateChanged(auth, u => {
-    user = u; ready = false; if (unsub) { unsub(); unsub = null; }
-    el('cloud-out').style.display = u ? '' : 'none';
-    if (!u) { el('auth-gate').style.display = 'flex'; setSt(''); return; }
-    el('auth-gate').style.display = 'none'; setSt('Sincronizando…');
-    unsub = onSnapshot(collection(db, 'households', 'main', 'data'), snap => {
-      if (snap.metadata.hasPendingWrites) return;
+
+  async function findSpaces() {
+    spaces = (await getDocs(query(collection(db, 'workspaces'), where('members', 'array-contains', me())))).docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  async function enter() {
+    setSt('Carregando…'); stop(); cloudReset();
+    try { await findSpaces(); }
+    catch (e) { await signOut(auth); show('auth-gate', true); el('auth-msg').textContent = e.code === 'permission-denied' ? 'Esta conta não está autorizada. Peça para incluírem o seu e-mail na lista de acesso.' : 'Erro de conexão: ' + (e.code || e.message); return; }
+    if (!spaces.length) { el('ws-who').textContent = user.email; el('ws-msg').textContent = ''; show('ws-gate', true); setSt(''); return; }
+    show('ws-gate', false);
+    let saved = null; try { saved = localStorage.getItem('FP_WS_' + me()); } catch (e) {}
+    openSpace((spaces.find(s => s.id === saved) || spaces.find(s => s.owner === me()) || spaces[0]).id);
+  }
+  function openSpace(id) {
+    stop(); cloudReset(); wid = id; try { localStorage.setItem('FP_WS_' + me(), id); } catch (e) {}
+    setSt('Sincronizando…');
+    unsubWs = onSnapshot(doc(db, 'workspaces', id), d => { if (d.exists() && id === wid) { ws = { id, ...d.data() }; const i = spaces.findIndex(x => x.id === id); if (i >= 0) spaces[i] = ws; renderShare(); } }, e => { if (e.code === 'permission-denied') enter(); });
+    unsub = onSnapshot(collection(db, 'workspaces', id, 'data'), snap => {
+      if (id !== wid || snap.metadata.hasPendingWrites) return;
       const remote = {}; snap.forEach(d => { remote[d.id] = d.data().v; });
       const next = { ...cloudGet() }; let changed = false;
       Object.keys(remote).forEach(k => { if (KEYS.includes(k) && remote[k] !== last[k]) { last[k] = remote[k]; next[k] = JSON.parse(remote[k]); changed = true; } });
       ready = true; if (changed) cloudApply(next);
-      window.cloudPush(); setSt('☁ Sincronizado · ' + u.email);
-    }, err => setSt('⚠ ' + (err.code === 'permission-denied' ? 'Esta conta não tem permissão de acesso' : 'Erro de conexão')));
+      window.cloudPush(); setSt('☁ Sincronizado · ' + user.email);
+    }, e => { if (e.code === 'permission-denied') enter(); else setSt('⚠ Erro de conexão'); });
+  }
+
+  window.cloudCreateWs = async () => {
+    const ref = doc(collection(db, 'workspaces'));
+    try { await setDoc(ref, { owner: me(), members: [me()], created: serverTimestamp() }); await findSpaces(); show('ws-gate', false); openSpace(ref.id); }
+    catch (e) { el('ws-msg').textContent = 'Não foi possível criar o espaço: ' + (e.code || e.message); }
+  };
+  window.cloudRecheck = async () => { await enter(); if (!spaces.length) el('ws-msg').textContent = 'Nenhum convite encontrado para ' + user.email + '.'; };
+  window.cloudSwitch = id => openSpace(id);
+  window.cloudInvite = async e => {
+    e.preventDefault(); const em = el('invite-email').value.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(em)) return say('E-mail inválido.', true);
+    if (ws.members.includes(em)) return say('Essa pessoa já está neste espaço.', true);
+    try { await updateDoc(doc(db, 'workspaces', wid), { members: arrayUnion(em) }); el('invite-email').value = ''; say(`Convite salvo! ${em} já pode entrar no site com esse e-mail.`); }
+    catch (err) { say('Não foi possível convidar (' + (err.code || err.message) + ')', true); }
+  };
+  window.cloudRemove = async em => {
+    if (!confirm(`Remover ${em}? A pessoa perde o acesso a estes dados.`)) return;
+    try { await updateDoc(doc(db, 'workspaces', wid), { members: arrayRemove(em) }); say('Pessoa removida.'); } catch (err) { say('Não foi possível remover (' + (err.code || err.message) + ')', true); }
+  };
+  function renderShare() {
+    if (!ws) return; const owner = ws.owner === me();
+    el('share-form').style.display = owner ? '' : 'none'; el('share-note').textContent = owner ? '' : `Só o dono do espaço (${ws.owner}) pode convidar ou remover pessoas.`;
+    el('share-list').innerHTML = ws.members.map(m => `<div class="row"><div class="flex-1 text-sm truncate">${esc(m)}</div>${m === ws.owner ? '<span class="chip">Dono</span>' : ''}${m === me() ? '<span class="chip">Você</span>' : ''}${owner && m !== ws.owner ? `<button class="ibtn" data-em="${esc(m)}" onclick="cloudRemove(this.dataset.em)" title="Remover"><i data-lucide="x" class="w-4 h-4"></i></button>` : ''}</div>`).join('');
+    const sw = el('share-switch'); sw.style.display = spaces.length > 1 ? '' : 'none';
+    sw.innerHTML = '<label class="lbl">Espaço ativo (você participa de mais de um)</label><select class="inp" onchange="cloudSwitch(this.value)">' + spaces.map(x => `<option value="${x.id}" ${x.id === wid ? 'selected' : ''}>Espaço de ${esc(x.owner)}</option>`).join('') + '</select>';
+    if (window.lucide) lucide.createIcons();
+  }
+
+  onAuthStateChanged(auth, u => {
+    user = u; el('cloud-out').style.display = u ? '' : 'none'; el('nav-share').style.display = u ? '' : 'none';
+    if (!u) { stop(); cloudReset(); show('ws-gate', false); show('auth-gate', true); setSt(''); return; }
+    show('auth-gate', false); el('auth-msg').textContent = ''; enter();
   });
 }
 </script>
