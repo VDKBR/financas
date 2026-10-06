@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finanças Pro</title>
+<meta name="theme-color" content="#0a0f16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0a0f16;
+         background-image: radial-gradient(900px 400px at 15% -5%, rgba(52,211,153,.10), transparent 60%); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #243041; border-radius: 4px; }
+  .card { background: #111823; border: 1px solid rgba(255,255,255,.06); border-radius: 24px; padding: 24px; }
+  .inp { width: 100%; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.09); border-radius: 12px;
+         padding: 10px 14px; font-size: 14px; color: #fff; outline: none; transition: border-color .15s; }
+  .inp:focus { border-color: var(--ac, #34d399); }
+  .lbl { display: block; font-size: 12px; font-weight: 500; color: #94a3b8; margin-bottom: 6px; }
+  .btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;
+         font-size: 14px; color: #fff; padding: 11px; border-radius: 12px; transition: filter .15s; }
+  .btn:hover { filter: brightness(1.12); }
+  .nav-btn { display: flex; align-items: center; width: 100%; gap: 12px; padding: 11px 14px; border-radius: 12px;
+             font-size: 14px; font-weight: 500; color: #94a3b8; transition: all .15s; }
+  .nav-btn:hover { background: rgba(255,255,255,.05); color: #fff; }
+  .nav-btn.active { background: rgba(52,211,153,.12); color: #fff; }
+  th { padding: 12px 14px; font-size: 12px; font-weight: 600; color: #94a3b8; text-align: left; background: rgba(0,0,0,.25); white-space: nowrap; }
+  td { padding: 12px 14px; font-size: 14px; border-top: 1px solid rgba(255,255,255,.05); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.07); color: #cbd5e1; }
+  .ibtn { padding: 6px; border-radius: 8px; color: #94a3b8; transition: all .15s; }
+  .ibtn:hover { background: rgba(255,255,255,.07); color: #fb7185; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; }
+  @media (max-width: 767px) {
+    aside nav { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
+    aside nav > .nav-btn { width: auto; white-space: nowrap; flex: none; padding: 9px 12px; }
+    #side-foot { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+    #side-foot > .nav-btn { width: auto; }
+    main { padding-bottom: 5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<script>
+// ===== CONFIGURAÇÃO DA NUVEM =====
+// Para usar online com login, cole aqui os dados do Firebase (passo 5 do guia).
+// Enquanto estiver "COLE_AQUI", o site funciona só neste computador, como antes.
+window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
+  authDomain: "financasgavi.firebaseapp.com",
+  projectId: "financasgavi",
+  storageBucket: "financasgavi.firebasestorage.app",
+  messagingSenderId: "91727667021",
+  appId: "1:91727667021:web:f17298d16804a35264e104", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+</script>
+<body class="min-h-screen text-slate-100 antialiased flex flex-col md:flex-row">
+
+<div id="auth-gate" class="fixed inset-0 z-50 bg-[#0a0f16] items-center justify-center p-6" style="display:none">
+  <div class="card max-w-sm w-full text-center space-y-5">
+    <div class="mx-auto p-3 rounded-2xl bg-emerald-400/10 text-emerald-400 w-fit"><i data-lucide="wallet" class="w-8 h-8"></i></div>
+    <div><h2 class="text-xl font-extrabold">Finanças Pro</h2><p class="text-sm text-slate-400 mt-1">Entre com sua conta Google para acessar os dados.</p></div>
+    <button class="btn bg-emerald-600" onclick="cloudLogin()">Entrar com Google</button>
+    <p id="auth-msg" class="text-xs text-rose-400"></p>
+  </div>
+</div>
+
+<!-- MENU LATERAL -->
+<aside class="w-full md:w-64 md:min-h-screen shrink-0 border-b md:border-b-0 md:border-r border-white/5 p-4 flex flex-col justify-between bg-[#0d131c]">
+  <div>
+    <div class="flex items-center gap-3 px-2 py-3 mb-3">
+      <div class="p-2.5 rounded-xl bg-emerald-400/10 text-emerald-400"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+      <div><h1 class="font-extrabold text-lg leading-tight">Finanças Pro</h1><span class="text-xs text-slate-400">Gestão e projeção</span></div>
+    </div>
+    <nav class="space-y-1">
+      <button class="nav-btn" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-5 h-5"></i>Resumo do mês</button>
+      <button class="nav-btn" data-tab="incomes"><i data-lucide="arrow-up-circle" class="w-5 h-5 text-emerald-400"></i>Recebimentos</button>
+      <button class="nav-btn" data-tab="fixed"><i data-lucide="repeat" class="w-5 h-5 text-amber-400"></i>Gastos fixos</button>
+      <button class="nav-btn" data-tab="card"><i data-lucide="credit-card" class="w-5 h-5 text-indigo-400"></i>Cartão de crédito</button>
+      <button class="nav-btn" data-tab="cards"><i data-lucide="id-card" class="w-5 h-5 text-indigo-300"></i>Meus cartões</button>
+      <button class="nav-btn" data-tab="accounts"><i data-lucide="landmark" class="w-5 h-5 text-sky-400"></i>Contas e saldos</button>
+      <button class="nav-btn" data-tab="projections"><i data-lucide="trending-up" class="w-5 h-5 text-cyan-400"></i>Projeção 12 meses</button>
+      <button class="nav-btn" data-tab="invest"><i data-lucide="sprout" class="w-5 h-5 text-violet-400"></i>Aplicações (CDB)</button>
+      <button class="nav-btn" data-tab="categories"><i data-lucide="tags" class="w-5 h-5 text-pink-400"></i>Categorias</button>
+    </nav>
+  </div>
+  <div id="side-foot" class="mt-6 space-y-1 text-xs">
+    <p id="cloud-status" class="text-[11px] text-slate-500 px-2 pb-1"></p>
+    <button id="cloud-out" style="display:none" onclick="cloudLogout()" class="nav-btn !text-xs !py-2"><i data-lucide="log-out" class="w-4 h-4"></i>Sair da conta</button>
+    <button onclick="exportData()" class="nav-btn !text-xs !py-2"><i data-lucide="download" class="w-4 h-4"></i>Salvar backup (arquivo)</button>
+    <label class="nav-btn !text-xs !py-2 cursor-pointer"><i data-lucide="upload" class="w-4 h-4"></i>Restaurar backup
+      <input type="file" accept=".json" class="hidden" onchange="importData(event)"></label>
+    <button onclick="loadSampleData()" class="nav-btn !text-xs !py-2"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i>Dados de exemplo</button>
+    <button onclick="resetData()" class="nav-btn !text-xs !py-2 !text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i>Limpar tudo</button>
+  </div>
+</aside>
+
+<div id="imp-modal" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-start justify-center p-3 overflow-y-auto">
+  <div class="card w-full max-w-6xl !p-5 md:!p-6 my-4" style="--ac:#818cf8">
+    <div class="flex justify-between items-start gap-4 mb-4">
+      <div><h3 class="text-xl font-extrabold">Conferir fatura importada</h3><p class="text-xs text-slate-400 mt-1">Ajuste categorias, parcelas e valores. Desmarque o que não quer lançar. Parcelas anteriores e futuras são criadas nos meses certos.</p></div>
+      <button class="ibtn" onclick="closeImport()" title="Fechar"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div><label class="lbl">Esta fatura é de (mês de vencimento)</label><input type="month" class="inp" id="imp-month" onchange="impMonth(this.value)"></div>
+      <div><label class="lbl">Cartão</label><select class="inp" id="imp-tag" onchange="imp.tag=this.value"></select></div>
+      <div class="text-xs text-slate-400 self-end pb-2" id="imp-hint"></div></div>
+    <div class="overflow-x-auto max-h-[52vh] overflow-y-auto rounded-xl"><table class="w-full"><thead class="sticky top-0 z-10"><tr><th></th><th>Data</th><th>Descrição</th><th>Categoria</th><th>Parcela</th><th>Valor da parcela</th><th>O que será lançado</th></tr></thead><tbody id="imp-body"></tbody></table></div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-5">
+      <div id="imp-sum" class="text-sm text-slate-300"></div>
+      <div class="flex gap-3"><button class="btn !w-auto px-5 bg-white/10" onclick="closeImport()">Cancelar</button><button class="btn !w-auto px-5 bg-indigo-600" onclick="confirmImport()"><i data-lucide="check" class="w-4 h-4"></i>Confirmar lançamentos</button></div></div>
+  </div>
+</div>
+
+<main class="flex-1 p-4 md:p-8 space-y-8 min-w-0">
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-800 border border-white/10 px-4 py-3 rounded-xl shadow-2xl text-sm"></div>
+
+  <!-- ============ RESUMO ============ -->
+  <section id="tab-dashboard" class="tab space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+      <div>
+        <p class="text-sm text-slate-400">Resumo de</p>
+        <h2 id="dash-month-title" class="text-4xl font-extrabold tracking-tight"></h2>
+        <p id="dash-month-tag" class="text-xs text-slate-500 mt-1"></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="moveMonth(-1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Mês anterior"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+        <select id="month-select" onchange="setMonth(this.value)" class="inp !w-auto !py-3 cursor-pointer"></select>
+        <button onclick="moveMonth(1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Próximo mês"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+        <button onclick="setMonth(invoiceMonth(today()))" class="card !px-4 !py-3 !rounded-xl text-sm font-semibold hover:bg-white/5" title="Fatura que está recebendo suas compras agora">Fatura aberta</button>
+        <button onclick="setMonth(curYM())" class="card !px-4 !py-3 !rounded-xl text-sm font-semibold hover:bg-white/5">Mês atual</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="card !p-5"><p class="text-xs text-slate-400">Receita</p><h3 id="kpi-income" class="text-2xl font-bold text-emerald-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes + pontuais do mês</p></div>
+      <div class="card !p-5"><p class="text-xs text-slate-400">Gastos fixos</p><h3 id="kpi-fixed" class="text-2xl font-bold text-amber-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes mensais</p></div>
+      <div class="card !p-5"><p class="text-xs text-slate-400">Fatura do cartão</p><h3 id="kpi-card" class="text-2xl font-bold text-indigo-400 mt-2"></h3><p id="kpi-card-sub" class="text-xs text-slate-500 mt-2"></p></div>
+      <div class="card !p-5"><p class="text-xs text-slate-400">Sobra prevista do mês</p><h3 id="kpi-net" class="text-2xl font-bold mt-2"></h3><p id="kpi-net-sub" class="text-xs text-slate-500 mt-2"></p></div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+      <div class="card xl:col-span-3" id="dash-invoice" style="--ac:#818cf8"></div>
+      <div class="card xl:col-span-2" id="dash-estcard" style="--ac:#22d3ee"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" id="dash-balance" style="--ac:#38bdf8"></div>
+      <div class="card" id="close-box" style="--ac:#38bdf8"></div>
+      <div class="card flex flex-col justify-between">
+        <div>
+          <h3 class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="gauge" class="w-5 h-5 text-indigo-400"></i>Renda comprometida</h3>
+          <div class="h-36 my-3"><canvas id="overviewChart"></canvas></div>
+          <div class="flex justify-between text-xs font-medium mb-1"><span class="text-slate-300">Fixos + fatura + estimado a gastar</span><span id="committed-percentage" class="font-bold">0%</span></div>
+          <div class="w-full bg-white/5 h-3 rounded-full overflow-hidden"><div id="committed-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width:0%"></div></div>
+          <div class="mt-4 space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400">Fixos + fatura</span><b id="dash-total" class="text-rose-400"></b></div>
+            <div class="flex justify-between"><span class="text-slate-400">Estimado ainda a gastar</span><b id="dash-est" class="text-cyan-400"></b></div>
+            <div class="flex justify-between border-t border-white/5 pt-2"><span class="text-slate-400">Sobra prevista</span><b id="dash-after"></b></div>
+          </div>
+        </div>
+        <div id="dash-alert" class="mt-4 p-4 rounded-xl text-xs bg-white/5 text-slate-300"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ RECEBIMENTOS ============ -->
+  <section id="tab-incomes" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Salários e recebimentos</h2><p class="text-slate-400 text-sm">Fontes de renda recorrentes ou pontuais</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#34d399">
+        <h3 class="font-semibold mb-4">Novo recebimento</h3>
+        <form id="income-form" onsubmit="addIncome(event)" class="space-y-4">
+          <div><label class="lbl">Descrição</label><input class="inp" id="inc-title" required placeholder="Ex: Salário Empresa X"></div>
+          <div><label class="lbl">Valor (R$)</label><input class="inp" type="number" step="0.01" min="0" id="inc-amount" required placeholder="0,00"></div>
+          <label class="row cursor-pointer"><input type="checkbox" id="inc-recurring" onchange="toggleIncomeDate()" class="w-4 h-4 accent-emerald-500"><span class="text-sm">Recorrente (todo mês)</span></label>
+          <div><label class="lbl" id="inc-date-lbl">Data do recebimento</label><input class="inp" type="date" id="inc-date" required>
+            <p id="inc-hint" class="text-xs text-slate-500 mt-1.5 hidden">Opcional. Se preencher, o dia será usado como o dia do mês em que você recebe, e o valor conta a partir desse mês.</p></div>
+          <button class="btn bg-emerald-600"><i data-lucide="check" class="w-4 h-4"></i>Salvar recebimento</button>
+        </form>
+      </div>
+      <div class="card lg:col-span-2">
+        <h3 class="font-semibold mb-4 flex justify-between">Lista de recebimentos <span id="income-count" class="chip"></span></h3>
+        <div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Descrição</th><th>Valor</th><th>Quando</th><th>Tipo</th><th></th></tr></thead><tbody id="income-body"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FIXOS ============ -->
+  <section id="tab-fixed" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Gastos fixos</h2><p class="text-slate-400 text-sm">Despesas que se repetem todo mês (aluguel, luz, internet…)</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#fbbf24">
+        <h3 class="font-semibold mb-4">Novo gasto fixo</h3>
+        <form id="fixed-form" onsubmit="addFixed(event)" class="space-y-4">
+          <div><label class="lbl">Nome</label><input class="inp" id="fix-title" required placeholder="Ex: Aluguel"></div>
+          <div><label class="lbl">Categoria</label><select class="inp cat-select" id="fix-category"></select></div>
+          <div><label class="lbl">Valor mensal (R$)</label><input class="inp" type="number" step="0.01" min="0" id="fix-amount" required placeholder="0,00"></div>
+          <button class="btn bg-amber-600"><i data-lucide="check" class="w-4 h-4"></i>Cadastrar gasto fixo</button>
+        </form>
+      </div>
+      <div class="card lg:col-span-2">
+        <h3 class="font-semibold mb-4 flex justify-between">Lista de gastos fixos <span id="fixed-count" class="chip"></span></h3>
+        <div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th></th></tr></thead><tbody id="fixed-body"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CARTÃO ============ -->
+  <section id="tab-card" class="tab hidden space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+      <div><h2 class="text-2xl font-extrabold">Cartão de crédito</h2><p class="text-slate-400 text-sm">Compra feita até o dia de fechamento cai na fatura do mês; depois do fechamento, vai para a fatura seguinte. A fatura é paga no vencimento, dentro do mês dela.</p></div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="row !py-2 text-sm text-slate-300 flex-wrap"><span class="text-xs text-slate-400">Fatura de <b id="cfg-month" class="text-slate-200"></b>:</span> Fecha dia <input type="number" min="0" max="28" id="cfg-close" onchange="setCfg()" class="inp !w-16 !py-1 !px-2 text-center"> Vence dia <input type="number" min="1" max="31" id="cfg-due" onchange="setCfg()" class="inp !w-16 !py-1 !px-2 text-center">
+          <button class="chip hover:bg-white/10" onclick="cfgDefault()" title="Usar estes dias nos meses sem ajuste">Usar como padrão</button><button class="chip hover:bg-white/10" id="cfg-reset" onclick="cfgReset()">Voltar ao padrão</button></div>
+        <label class="btn bg-indigo-600 !w-auto px-4 cursor-pointer"><i data-lucide="file-up" class="w-4 h-4"></i>Importar fatura (.csv)<input type="file" accept=".csv,.txt" class="hidden" onchange="openImport(event)"></label>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#818cf8">
+        <h3 class="font-semibold mb-4">Lançar compra</h3>
+        <form id="card-form" onsubmit="addCard(event)" class="space-y-4">
+          <div><label class="lbl">Descrição</label><input class="inp" id="card-title" required placeholder="Ex: Notebook, Restaurante"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="lbl">Valor total (R$)</label><input class="inp" type="number" step="0.01" min="0" id="card-amount" required oninput="previewInst()" placeholder="0,00"></div>
+            <div><label class="lbl">Parcelas</label><input class="inp" type="number" min="1" max="60" value="1" id="card-inst" required oninput="previewInst()"></div>
+          </div>
+          <p id="inst-preview" class="text-xs text-indigo-300 -mt-2 min-h-[16px]"></p>
+          <div><label class="lbl">Data da compra</label><input class="inp" type="date" id="card-date" required oninput="previewInst()"></div>
+          <div><label class="lbl">Cartão</label><select class="inp" id="card-tag"></select></div>
+          <div><label class="lbl">Categoria</label><select class="inp cat-select" id="card-category"></select></div>
+          <button class="btn bg-indigo-600"><i data-lucide="check" class="w-4 h-4"></i>Registrar compra</button>
+        </form>
+      </div>
+      <div class="card lg:col-span-2">
+        <div class="space-y-3 mb-5">
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="cf-mode" class="inp !w-auto cursor-pointer" onchange="cfSet('mode', this.value)"><option value="month">Uma fatura</option><option value="range">Intervalo de faturas</option><option value="dates">Intervalo de datas da compra</option></select>
+            <span id="cf-month-box" class="flex items-center gap-2"><button class="ibtn !bg-white/5" onclick="cardMove(-1)" title="Fatura anterior"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+              <select id="card-month" class="inp !w-auto cursor-pointer" onchange="cardView=this.value;renderCardMonth()"></select>
+              <button class="ibtn !bg-white/5" onclick="cardMove(1)" title="Próxima fatura"><i data-lucide="chevron-right" class="w-5 h-5"></i></button></span>
+            <span id="cf-range-box" class="items-center gap-2 text-xs text-slate-400" style="display:none">De <input type="month" id="cf-from" class="inp !w-auto" onchange="cfSet('from', this.value)"> até <input type="month" id="cf-to" class="inp !w-auto" onchange="cfSet('to', this.value)"></span>
+            <span id="cf-dates-box" class="items-center gap-2 text-xs text-slate-400" style="display:none">De <input type="date" id="cf-fromd" class="inp !w-auto" onchange="cfSet('fromD', this.value)"> até <input type="date" id="cf-tod" class="inp !w-auto" onchange="cfSet('toD', this.value)"></span>
+            <span id="card-count" class="chip ml-auto"></span></div>
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-2">
+            <select id="cf-cat" class="inp" onchange="cfSet('cat', this.value)"></select>
+            <select id="cf-card" class="inp" onchange="cfSet('card', this.value)"></select>
+            <input id="cf-q" class="inp" placeholder="Buscar descrição" oninput="cfSet('q', this.value)">
+            <select id="cf-group" class="inp" onchange="cfSet('group', this.value)"><option value="cat">Agrupar por categoria</option><option value="card">Agrupar por cartão</option><option value="month">Agrupar por fatura</option><option value="none">Sem agrupar (por data)</option></select>
+            <button class="chip !justify-center hover:bg-white/10" onclick="cfClear()">Limpar filtros</button></div></div>
+        <div id="card-month-view"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEUS CARTÕES ============ -->
+  <section id="tab-cards" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Meus cartões</h2><p class="text-slate-400 text-sm">Cadastre seus cartões com o nome que quiser. Eles aparecem ao lançar compras, ao importar faturas e nos filtros.</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#818cf8"><h3 class="font-semibold mb-4">Novo cartão</h3>
+        <form onsubmit="addCreditCard(event)" class="space-y-4"><div><label class="lbl">Nome do cartão / banco</label><input class="inp" id="newcard-name" required maxlength="30" placeholder="Ex: XP Visa, Nubank, Mercado Pago"></div>
+          <button class="btn bg-indigo-600"><i data-lucide="check" class="w-4 h-4"></i>Cadastrar cartão</button></form></div>
+      <div class="card lg:col-span-2"><h3 class="font-semibold mb-4">Cartões cadastrados</h3><div id="cards-list" class="space-y-2.5"></div>
+        <p class="text-xs text-slate-500 mt-4">Renomear um cartão atualiza também os lançamentos antigos dele.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ CONTAS E SALDOS ============ -->
+  <section id="tab-accounts" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Contas e saldos</h2><p class="text-slate-400 text-sm">O dinheiro que você já tem guardado, separado por banco. A soma é o ponto de partida da projeção.</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#38bdf8">
+        <h3 class="font-semibold mb-4">Nova conta</h3>
+        <form id="acc-form" onsubmit="addAccount(event)" class="space-y-4">
+          <div><label class="lbl">Banco ou conta</label>
+            <input class="inp" id="acc-name" list="bank-list" required maxlength="30" placeholder="Ex: XP, Nubank, Mercado Pago">
+            <datalist id="bank-list"><option value="XP"><option value="Nubank"><option value="Mercado Pago"><option value="Inter"><option value="C6 Bank"><option value="Itaú"><option value="Bradesco"><option value="Santander"><option value="Caixa"><option value="Banco do Brasil"><option value="PicPay"><option value="Dinheiro em espécie"></datalist></div>
+          <div><label class="lbl">Saldo atual (R$)</label><input class="inp" type="number" step="0.01" id="acc-balance" required placeholder="0,00"></div>
+          <button class="btn bg-sky-600"><i data-lucide="check" class="w-4 h-4"></i>Adicionar conta</button>
+        </form>
+      </div>
+      <div class="card lg:col-span-2">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-5">
+          <div><p class="text-xs text-slate-400">Saldo total guardado</p><h3 id="acc-total" class="text-3xl font-extrabold text-sky-300"></h3></div>
+          <span id="acc-count" class="chip"></span>
+        </div>
+        <div id="acc-list" class="space-y-2.5"></div>
+        <p class="text-xs text-slate-500 mt-5">Você pode corrigir o saldo de qualquer conta direto no campo de valor. Para somar a sobra de um mês, use o cartão "Fechar o mês" no Resumo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJEÇÃO ============ -->
+  <section id="tab-projections" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Projeção dos próximos 12 meses</h2><p class="text-slate-400 text-sm">Parte do saldo de hoje (que já reflete o mês atual) e soma a sobra de cada mês seguinte: salário − fixos − fatura do mês − estimativas. O que já foi no cartão numa categoria abate o estimado dela; só conta a mais se passar.</p></div>
+
+    <div class="card flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div><p class="text-xs text-slate-400">Saldo total previsto daqui a 12 meses</p><h3 id="proj-total" class="text-3xl font-extrabold mt-1"></h3><p id="proj-text" class="text-sm text-slate-300 mt-1"></p></div>
+      <div id="proj-badge" class="chip !text-sm !px-4 !py-2"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card" style="--ac:#22d3ee">
+        <h3 class="font-semibold mb-1">Gastos estimados</h3>
+        <p class="text-xs text-slate-400 mb-4">Gastos variáveis que você prevê: mensais ou de uma vez só.</p>
+        <form id="proj-form" onsubmit="addProjected(event)" class="space-y-3 pb-5 mb-5 border-b border-white/5">
+          <input class="inp" id="proj-title" required placeholder="Ex: Gasolina, Viagem de julho">
+          <div class="grid grid-cols-2 gap-3">
+            <input class="inp" type="number" step="0.01" min="0" id="proj-amount" required placeholder="Valor R$">
+            <select class="inp cat-select" id="proj-category"></select>
+          </div>
+          <select class="inp" id="proj-kind" onchange="toggleProjKind()"><option value="monthly">Todo mês</option><option value="once">Uma vez só</option></select>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="lbl" id="proj-start-lbl">A partir de</label><input class="inp" type="month" id="proj-start" required></div>
+            <div id="proj-end-wrap"><label class="lbl">Até (opcional)</label><input class="inp" type="month" id="proj-end"></div>
+          </div>
+          <button class="btn bg-cyan-600"><i data-lucide="plus" class="w-4 h-4"></i>Adicionar estimativa</button>
+        </form>
+        <div class="flex justify-between text-sm mb-3"><span class="text-slate-400">Estimado este mês</span><b id="proj-now" class="text-cyan-400"></b></div>
+        <div id="projected-list" class="space-y-2.5"></div>
+      </div>
+
+      <div class="lg:col-span-2 space-y-6 min-w-0">
+        <div class="card"><h3 class="font-semibold mb-4">Sobra mensal e saldo total previsto</h3><div class="h-64"><canvas id="projectionChart"></canvas></div></div>
+        <div class="card">
+          <h3 class="font-semibold mb-4">Mês a mês</h3>
+          <div class="overflow-x-auto rounded-xl max-h-80 overflow-y-auto"><table class="w-full"><thead class="sticky top-0"><tr><th>Mês</th><th>Receita</th><th>Fixos</th><th>Fatura</th><th>Estimado a gastar</th><th>Sobra do mês</th><th>Saldo em contas</th></tr></thead><tbody id="proj-body"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ APLICAÇÕES ============ -->
+  <section id="tab-invest" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Aplicações em CDB</h2><p class="text-slate-400 text-sm">Simulação separada do saldo líquido em conta. Considera IR regressivo e resgate só após 30 dias (sem IOF).</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card space-y-4" style="--ac:#a78bfa">
+        <div><label class="lbl">Aporte inicial / único (R$)</label><input class="inp" type="number" step="0.01" min="0" id="inv-init" oninput="invCalc()" placeholder="0,00"></div>
+        <div><label class="lbl">Aporte mensal recorrente (R$)</label><input class="inp" type="number" step="0.01" min="0" id="inv-month" oninput="invCalc()" placeholder="0,00"></div>
+        <div><label class="lbl">Projetar até</label><input class="inp" type="month" id="inv-end" onchange="invCalc()">
+          <div class="flex flex-wrap gap-2 mt-2"><button class="chip hover:bg-white/10" onclick="invQuick(1)">1 ano</button><button class="chip hover:bg-white/10" onclick="invQuick(5)">5 anos</button><button class="chip hover:bg-white/10" onclick="invQuick(10)">10 anos</button><button class="chip hover:bg-white/10" onclick="invQuick(20)">20 anos</button></div></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="lbl">CDI (% ao ano)</label><input class="inp" type="number" step="0.01" id="inv-cdi" oninput="invCalc()"></div>
+          <div><label class="lbl">CDB paga (% do CDI)</label><input class="inp" type="number" step="0.1" id="inv-pct" oninput="invCalc()"></div></div>
+        <p class="text-xs text-slate-500">Só aporte inicial = valor único rendendo. Aporte mensal preenchido = bola de neve. Confira o CDI do dia e o % do seu CDB. O imposto incide só sobre o rendimento e cada aporte é tributado pelo seu próprio tempo: <b>IR</b> 22,5% até 180 dias, 20% de 181 a 360, 17,5% de 361 a 720 e 15% acima; <b>IOF</b> regressivo de 96% (dia 1) a 0% (dia 30), só nos primeiros 30 dias. Taxa mantida constante, valores estimados.</p>
+      </div>
+      <div class="lg:col-span-2 space-y-6 min-w-0">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="card !p-5"><p class="text-xs text-slate-400">Total aportado</p><h3 id="inv-k1" class="text-xl font-bold mt-2"></h3></div>
+          <div class="card !p-5"><p class="text-xs text-slate-400">Rendimento líquido</p><h3 id="inv-k2" class="text-xl font-bold text-emerald-400 mt-2"></h3></div>
+          <div class="card !p-5"><p class="text-xs text-slate-400">IR + IOF estimados</p><h3 id="inv-k3" class="text-xl font-bold text-amber-400 mt-2"></h3></div>
+          <div class="card !p-5"><p class="text-xs text-slate-400">Valor líquido final</p><h3 id="inv-k4" class="text-xl font-bold text-violet-300 mt-2"></h3></div></div>
+        <div class="card"><h3 class="font-semibold mb-1">Evolução</h3><p id="inv-sub" class="text-xs text-slate-400 mb-4"></p><div class="h-64"><canvas id="investChart"></canvas></div></div>
+        <div class="card"><h3 class="font-semibold mb-1">Tributação aplicada no fim do período</h3><p class="text-xs text-slate-400 mb-4">Cada aporte cai na faixa de IR correspondente ao tempo em que ficou aplicado.</p>
+          <div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Tempo aplicado</th><th>Aportes</th><th>Aportado</th><th>Rendimento bruto</th><th>IOF</th><th>IR</th><th>Rendimento líquido</th></tr></thead><tbody id="inv-tax"></tbody></table></div></div>
+        <div class="card"><h3 class="font-semibold mb-1">Simulador de resgate antecipado</h3><p class="text-xs text-slate-400 mb-4">Veja o IOF e o IR se você resgatar um valor após poucos dias.</p>
+          <div class="grid grid-cols-2 gap-3 max-w-md mb-3"><div><label class="lbl">Valor aplicado (R$)</label><input class="inp" type="number" min="0" step="0.01" id="inv-r-val" value="10000" oninput="renderRedeem()"></div>
+            <div><label class="lbl">Dias aplicado</label><input class="inp" type="number" min="1" id="inv-r-days" value="20" oninput="renderRedeem()"></div></div>
+          <p id="inv-r-out" class="text-sm text-slate-300 leading-relaxed"></p></div>
+        <div class="card"><h3 class="font-semibold mb-4">Ano a ano</h3><div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Mês</th><th>Aportado</th><th>Rendimento líquido</th><th>Valor líquido</th></tr></thead><tbody id="inv-body"></tbody></table></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORIAS ============ -->
+  <section id="tab-categories" class="tab hidden space-y-6">
+    <div><h2 class="text-2xl font-extrabold">Categorias</h2><p class="text-slate-400 text-sm">Crie suas categorias (mercado, cinema, carro…). Elas aparecem ao lançar gastos fixos, de cartão e estimados.</p></div>
+    <div class="card max-w-2xl" style="--ac:#f472b6">
+      <form onsubmit="addCategory(event)" class="flex gap-3 mb-5">
+        <input class="inp" id="cat-name" required maxlength="30" placeholder="Nova categoria">
+        <button class="btn bg-pink-600 !w-auto px-5 shrink-0"><i data-lucide="plus" class="w-4 h-4"></i>Adicionar</button>
+      </form>
+      <div id="cat-list" class="flex flex-wrap gap-2"></div>
+      <p class="text-xs text-slate-500 mt-5">Apagar uma categoria não altera lançamentos antigos que já usam o nome dela.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ================= DADOS E PERSISTÊNCIA (salvos no navegador) ================= */
+const KEY = 'FINANCAS_PRO_DATA_V1';
+const DEF_CATS = ['Moradia','Contas Fixas','Educação','Saúde','Assinaturas','Alimentação','Supermercado','Transporte','Lazer','Compras','Outros'];
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let state = blank(), viewYM = curYM(), charts = {};
+
+function blank() { return { incomes: [], fixedExpenses: [], cardExpenses: [], projectedExpenses: [], categories: [...DEF_CATS], accounts: [], closedMonths: {}, cards: [], cardCfg: { closing: 3, due: 10, months: {} }, invest: { cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, invoiceV2: true }; }
+function pad(n) { return String(n).padStart(2, '0'); }
+function today() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function curYM() { return today().slice(0, 7); }
+function ymAdd(ym, n) { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; }
+function ymLong(ym) { const [y, m] = ym.split('-'); return `${MONTHS[m-1]} de ${y}`; }
+function ymShort(ym) { const [y, m] = ym.split('-'); return `${MONTHS[m-1].slice(0,3)}/${y.slice(2)}`; }
+// Mês da fatura em que uma compra cai: até o dia de fechamento = fatura do mesmo mês; depois = mês seguinte
+// Dia de fechamento/vencimento de cada fatura: ajuste do mês, ou o padrão
+function cfgFor(ym, cfg = state.cardCfg) { const o = (cfg.months || {})[ym] || {}; return { closing: o.closing ?? cfg.closing, due: o.due ?? cfg.due }; }
+function invoiceMonth(date, closing) { const [y, m, d] = date.split('-').map(Number), ym = `${y}-${pad(m)}`, c = closing ?? (state.cardCfg ? cfgFor(ym).closing : 3); return d <= c ? ym : ymAdd(ym, 1); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function money(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+function fdate(s) { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; }
+const $ = id => document.getElementById(id);
+const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
+
+// Completa dados antigos para funcionarem com as novas funções
+function normalize(s) {
+  const b = blank(), wasMigrated = !!(s && s.invoiceV2);
+  s = Object.assign(b, s || {});
+  if (!s.categories || !s.categories.length) s.categories = [...DEF_CATS];
+  if (!Array.isArray(s.accounts)) s.accounts = [];
+  s.cardCfg = Object.assign({ closing: 3, due: 10 }, s.cardCfg || {}); if (!s.cardCfg.months) s.cardCfg.months = {};
+  if (!Array.isArray(s.cards)) s.cards = [];
+  if (!s.cards.length) { const nm = [...new Set(s.cardExpenses.map(c => c.tag).filter(Boolean))]; (nm.length ? nm : ['Cartão principal']).forEach(n => s.cards.push({ id: uid(), name: n })); }
+  s.invest = Object.assign({ cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, s.invest || {});
+  // Migração única: faturas passam a seguir o fechamento do cartão (compra de outubro -> fatura de novembro)
+  if (!wasMigrated) { s.cardExpenses.forEach(c => { if (c.date) c.month = ymAdd(invoiceMonth(c.date, s.cardCfg.closing), (c.n || 1) - 1); }); s.invoiceV2 = true; }
+  if (!s.closedMonths || typeof s.closedMonths !== 'object') s.closedMonths = {};
+  s.cardExpenses.forEach(c => { c.month = c.month || (c.date || curYM()).slice(0, 7); c.n = c.n || 1; c.of = c.of || 1; c.groupId = c.groupId || c.id; });
+  s.projectedExpenses.forEach(p => { p.kind = p.kind || 'monthly'; p.start = p.start || curYM(); p.end = p.end || ''; p.category = p.category || 'Outros'; });
+  return s;
+}
+// Pontes usadas pela sincronização online (módulo no fim do arquivo)
+function cloudGet() { return state; }
+function cloudApply(obj) { state = normalize(obj); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} renderAll(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Não foi possível salvar neste navegador.', true); } renderAll(); if (window.cloudPush) window.cloudPush(); }
+function load() { try { const d = localStorage.getItem(KEY); if (d) state = JSON.parse(d); } catch (e) {} state = normalize(state); }
+
+function resetData() { if (confirm(window.CLOUD_ON ? 'Apagar TODOS os dados online (de todos que usam este site)?' : 'Apagar TODOS os dados?')) { state = normalize(blank()); save(); toast('Dados apagados.'); } }
+function exportData() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
+  a.download = `financas-backup-${today()}.json`; a.click();
+  toast('Backup baixado. Guarde o arquivo em local seguro.');
+}
+function importData(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  if (window.CLOUD_ON && !confirm('Restaurar este backup substitui os dados online de todos que usam o site. Continuar?')) { ev.target.value = ''; return; }
+  const r = new FileReader();
+  r.onload = () => { try { state = normalize(JSON.parse(r.result)); save(); toast('Backup restaurado!'); } catch (e) { toast('Arquivo de backup inválido.', true); } };
+  r.readAsText(f); ev.target.value = '';
+}
+function loadSampleData() {
+  if (!confirm('Substituir seus dados pelos dados de exemplo?')) return;
+  const t = today(), ym = curYM();
+  state = normalize({
+    incomes: [{ id: uid(), title: 'Salário', amount: 5500, date: t, recurring: true }, { id: uid(), title: 'Freelance', amount: 1200, date: t, recurring: false }],
+    fixedExpenses: [{ id: uid(), title: 'Aluguel + condomínio', category: 'Moradia', amount: 1800 }, { id: uid(), title: 'Internet', category: 'Contas Fixas', amount: 120 }],
+    accounts: [{ id: uid(), name: 'Nubank', balance: 10000 }], cards: [{ id: uid(), name: 'Nubank' }, { id: uid(), name: 'Visa XP' }],
+    cardExpenses: [], projectedExpenses: [
+      { id: uid(), title: 'Gasolina', amount: 600, category: 'Transporte', kind: 'monthly', start: ym, end: '' },
+      { id: uid(), title: 'Mercado', amount: 1000, category: 'Supermercado', kind: 'monthly', start: ym, end: '' },
+      { id: uid(), title: 'Viagem de férias', amount: 2500, category: 'Lazer', kind: 'once', start: ymAdd(ym, 4), end: '' }]
+  });
+  pushCard({ title: 'Notebook', total: 3000, inst: 3, date: t, tag: 'Nubank', category: 'Compras' });
+  pushCard({ title: 'Jantar', total: 180, inst: 1, date: t, tag: 'Visa XP', category: 'Alimentação' });
+  save(); toast('Exemplo carregado!');
+}
+
+/* ================= CÁLCULOS POR MÊS ================= */
+// Para cada categoria com estimativa: o gasto do mês é o MAIOR entre estimado e o que já foi para o cartão.
+// Ou seja, o cartão "consome" o estimado; só soma a mais quando ultrapassa.
+function monthData(ym) {
+  const income = sum(state.incomes, i => { const m = i.date ? i.date.slice(0, 7) : null; return i.recurring ? ((!m || m <= ym) ? i.amount : 0) : (m === ym ? i.amount : 0); });
+  const fixed = sum(state.fixedExpenses, f => f.amount);
+  const cardItems = state.cardExpenses.filter(c => c.month === ym), card = sum(cardItems, c => c.amount), estBy = {}, cardBy = {};
+  state.projectedExpenses.filter(p => p.active !== false).forEach(p => {
+    if (p.kind === 'once' ? p.start === ym : (p.start <= ym && (!p.end || ym <= p.end))) estBy[p.category] = (estBy[p.category] || 0) + p.amount; });
+  cardItems.forEach(c => cardBy[c.category] = (cardBy[c.category] || 0) + c.amount);
+  let est = 0, estRem = 0, over = 0; const cats = [];
+  Object.keys(estBy).forEach(k => { const e = estBy[k], g = cardBy[k] || 0; est += e; estRem += Math.max(0, e - g); over += Math.max(0, g - e); cats.push({ cat: k, est: e, card: g, over: Math.max(0, g - e) }); });
+  cats.sort((a, b) => b.over - a.over || b.est - a.est);
+  const parcelado = sum(cardItems.filter(c => c.of > 1), c => c.amount), semEst = sum(Object.keys(cardBy).filter(k => !(k in estBy)), k => cardBy[k]);
+  return { income, fixed, card, cardItems, cardCount: cardItems.length, parcelado, avista: card - parcelado, est, estRem, over, cats, semEst, net: income - fixed - card, after: income - fixed - card - estRem };
+}
+
+/* ================= CONTAS, SALDO E FECHAMENTO DO MÊS ================= */
+const r2 = v => Math.round(v * 100) / 100;
+function totalBalance() { return r2(sum(state.accounts, a => a.balance)); }
+
+// Linhas da projeção: começa do saldo atual e soma a sobra de cada mês.
+// Meses já "fechados" não são somados de novo, pois a sobra deles já está no saldo das contas.
+function projectRows(n) {
+  const base = curYM(); let bal = totalBalance(); const rows = [];
+  for (let i = 0; i < n; i++) {
+    const ym = ymAdd(base, i), d = monthData(ym), closed = state.closedMonths[ym] || null;
+    if (i > 0 && !closed) bal += d.after;
+    rows.push({ ym, d, closed, bal: r2(bal) });
+  }
+  return rows;
+}
+function addAccount(e) {
+  e.preventDefault(); const name = $('acc-name').value.trim();
+  if (state.accounts.some(a => a.name.toLowerCase() === name.toLowerCase())) return toast('Já existe uma conta com esse nome.', true);
+  state.accounts.push({ id: uid(), name, balance: parseFloat($('acc-balance').value) || 0 });
+  $('acc-form').reset(); save(); toast('Conta adicionada!');
+}
+function updBalance(id, v) { const a = state.accounts.find(x => x.id === id); if (a) { a.balance = parseFloat(v) || 0; save(); } }
+function delAccount(id) {
+  const a = state.accounts.find(x => x.id === id); if (!a) return;
+  if (!confirm(`Remover a conta "${a.name}" (${money(a.balance)})? Esse valor deixa de contar no saldo total.`)) return;
+  state.accounts = state.accounts.filter(x => x.id !== id); save();
+}
+function toggleNewAcc() { const n = $('close-newname'); if (n) n.classList.toggle('hidden', $('close-acc').value !== '__new__'); }
+function confirmClose() {
+  const ym = viewYM, amount = r2(parseFloat($('close-amount').value));
+  if (isNaN(amount)) return toast('Informe o valor que sobrou.', true);
+  let acc, sel = $('close-acc').value;
+  if (sel === '__new__') {
+    const name = $('close-newname').value.trim();
+    if (!name) return toast('Digite o nome da nova conta.', true);
+    acc = state.accounts.find(a => a.name.toLowerCase() === name.toLowerCase());
+    if (!acc) { acc = { id: uid(), name, balance: 0 }; state.accounts.push(acc); }
+  } else acc = state.accounts.find(a => a.id === sel);
+  if (!acc) return toast('Escolha uma conta.', true);
+  acc.balance = r2(acc.balance + amount);
+  state.closedMonths[ym] = { amount, accountId: acc.id, accountName: acc.name };
+  save(); toast(`${money(amount)} somado em ${acc.name}. Saldo total: ${money(totalBalance())}`);
+}
+function undoClose(ym) {
+  const c = state.closedMonths[ym]; if (!c) return;
+  if (!confirm(`Desfazer o fechamento? ${money(c.amount)} será retirado de ${c.accountName}.`)) return;
+  const acc = state.accounts.find(a => a.id === c.accountId);
+  if (acc) acc.balance = r2(acc.balance - c.amount);
+  delete state.closedMonths[ym]; save(); toast('Fechamento desfeito.');
+}
+
+// Situação da fatura de um mês conforme a data de hoje (relógio do computador)
+function invoiceStatus(ym, now = new Date()) {
+  const [y, m] = ym.split('-').map(Number), c = cfgFor(ym), pv = cfgFor(ymAdd(ym, -1)), t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const cd = new Date(y, m - 1, c.closing), dd = new Date(y, m - 1, c.due), start = new Date(y, m - 2, pv.closing + 1), fd = x => `${pad(x.getDate())}/${pad(x.getMonth() + 1)}`, left = Math.round((cd - t) / 864e5);
+  if (t < start) return `Fatura futura · começa a receber compras em ${fd(start)}`;
+  if (t <= cd) return `Fatura aberta · fecha em ${fd(cd)} (${left === 0 ? 'hoje' : left + ' dia(s)'}) · vence ${fd(dd)}`;
+  if (t <= dd) return `Fatura fechada · vence em ${fd(dd)}`;
+  return `Fatura com vencimento em ${fd(dd)} (já passou)`;
+}
+/* ================= NAVEGAÇÃO ================= */
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(e => e.classList.add('hidden'));
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  $('tab-' + t).classList.remove('hidden');
+  renderAll();
+}
+document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+function toast(msg, err) {
+  const t = $('toast'); t.textContent = msg; t.style.borderColor = err ? '#fb7185' : 'rgba(255,255,255,.1)';
+  t.classList.remove('hidden'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.add('hidden'), 3000);
+}
+
+/* ================= SELETOR DE MÊS ================= */
+function buildMonthSelect() {
+  const sel = $('month-select'), base = curYM(); sel.innerHTML = '';
+  for (let i = -12; i <= 12; i++) { const ym = ymAdd(base, i); sel.add(new Option(ymLong(ym), ym)); }
+  sel.value = viewYM;
+}
+function setMonth(ym) { viewYM = ym; renderDashboard(); }
+function moveMonth(n) {
+  const next = ymAdd(viewYM, n), base = curYM();
+  if (next < ymAdd(base, -12) || next > ymAdd(base, 12)) return toast('Limite: 12 meses para trás e para frente.');
+  setMonth(next);
+}
+
+/* ================= CATEGORIAS ================= */
+function fillCategorySelects() {
+  document.querySelectorAll('.cat-select').forEach(sel => {
+    const prev = sel.value; sel.innerHTML = '';
+    state.categories.forEach(c => sel.add(new Option(c, c)));
+    sel.add(new Option('+ Nova categoria…', '__new__'));
+    sel.value = state.categories.includes(prev) ? prev : state.categories[0];
+    sel.onchange = () => {
+      if (sel.value !== '__new__') return;
+      const n = (prompt('Nome da nova categoria:') || '').trim();
+      if (n) { if (!state.categories.includes(n)) state.categories.push(n); save(); sel.value = n; } else sel.value = state.categories[0];
+    };
+  });
+}
+function addCategory(e) {
+  e.preventDefault(); const n = $('cat-name').value.trim();
+  if (state.categories.some(c => c.toLowerCase() === n.toLowerCase())) return toast('Essa categoria já existe.', true);
+  state.categories.push(n); save(); $('cat-name').value = ''; toast('Categoria criada!');
+}
+function delCategory(i) { state.categories.splice(i, 1); save(); }
+
+/* ================= RECEBIMENTOS ================= */
+function toggleIncomeDate() {
+  const rec = $('inc-recurring').checked;
+  $('inc-date').required = !rec; $('inc-hint').classList.toggle('hidden', !rec);
+  $('inc-date-lbl').textContent = rec ? 'Dia habitual do recebimento (opcional)' : 'Data do recebimento';
+}
+function addIncome(e) {
+  e.preventDefault();
+  state.incomes.push({ id: uid(), title: $('inc-title').value.trim(), amount: parseFloat($('inc-amount').value),
+    date: $('inc-date').value, recurring: $('inc-recurring').checked });
+  $('income-form').reset(); toggleIncomeDate(); save(); toast('Recebimento adicionado!');
+}
+function delIncome(id) { state.incomes = state.incomes.filter(i => i.id !== id); save(); }
+
+/* ================= GASTOS FIXOS ================= */
+function addFixed(e) {
+  e.preventDefault();
+  state.fixedExpenses.push({ id: uid(), title: $('fix-title').value.trim(), category: $('fix-category').value, amount: parseFloat($('fix-amount').value) });
+  $('fixed-form').reset(); save(); toast('Gasto fixo cadastrado!');
+}
+function delFixed(id) { state.fixedExpenses = state.fixedExpenses.filter(i => i.id !== id); save(); }
+
+/* ================= CARTÃO (COM PARCELAS) ================= */
+function pushCard({ title, total, inst, date, tag, category }) {
+  const cents = Math.round(total * 100), base = Math.floor(cents / inst), rest = cents - base * inst, gid = uid();
+  for (let i = 0; i < inst; i++)
+    state.cardExpenses.push({ id: gid + '-' + i, groupId: gid, title, amount: (base + (i === inst - 1 ? rest : 0)) / 100,
+      date, month: ymAdd(invoiceMonth(date), i), tag, category, n: i + 1, of: inst });
+}
+function previewInst() {
+  const t = parseFloat($('card-amount').value), n = parseInt($('card-inst').value) || 1, dt = $('card-date').value; let x = '';
+  if (t > 0 && n > 1) x = `${n}x de ${money(t / n)} · `;
+  if (dt) { const m = invoiceMonth(dt), c = cfgFor(m); x += `1ª parcela na fatura de ${ymShort(m)} (fecha dia ${c.closing}, vence ${pad(c.due)}/${m.slice(5)})`; }
+  $('inst-preview').textContent = x;
+}
+// Fechamento e vencimento valem para a fatura do mês selecionado na aba Cartão (novos lançamentos)
+function setCfg() {
+  if (!cardView) cardView = invoiceMonth(today());
+  const c = parseInt($('cfg-close').value), d = parseInt($('cfg-due').value), cur = cfgFor(cardView);
+  state.cardCfg.months[cardView] = { closing: isNaN(c) ? cur.closing : Math.min(28, Math.max(0, c)), due: isNaN(d) ? cur.due : Math.min(31, Math.max(1, d)) };
+  const n = state.cardCfg.months[cardView]; save(); previewInst(); toast(`Fatura de ${ymLong(cardView)}: fecha dia ${n.closing}, vence dia ${n.due}.`);
+}
+function cfgDefault() { const x = cfgFor(cardView); state.cardCfg.closing = x.closing; state.cardCfg.due = x.due; save(); toast('Agora é o padrão dos meses sem ajuste.'); }
+function cfgReset() { delete state.cardCfg.months[cardView]; save(); }
+function addCard(e) {
+  e.preventDefault();
+  const inst = Math.max(1, Math.min(60, parseInt($('card-inst').value) || 1));
+  pushCard({ title: $('card-title').value.trim(), total: parseFloat($('card-amount').value), inst, date: $('card-date').value,
+    tag: $('card-tag').value.trim() || 'Cartão principal', category: $('card-category').value });
+  $('card-form').reset(); $('card-inst').value = 1; previewInst(); save();
+  toast(inst > 1 ? `Compra lançada em ${inst} parcelas!` : 'Compra lançada!');
+}
+function delCard(id) {
+  const c = state.cardExpenses.find(x => x.id === id); if (!c) return;
+  if (c.of > 1) { if (!confirm(`Esta compra tem ${c.of} parcelas. Remover todas?`)) return; state.cardExpenses = state.cardExpenses.filter(x => x.groupId !== c.groupId); }
+  else state.cardExpenses = state.cardExpenses.filter(x => x.id !== id);
+  save(); toast('Compra removida.');
+}
+
+/* ================= CARTÕES CADASTRADOS ================= */
+const cardNames = () => [...new Set([...state.cards.map(c => c.name), ...state.cardExpenses.map(c => c.tag).filter(Boolean)])];
+function fillCardSelects() {
+  const sel = $('card-tag'); if (!sel) return; const prev = sel.value;
+  sel.innerHTML = state.cards.map(c => `<option>${esc(c.name)}</option>`).join(''); if (state.cards.some(c => c.name === prev)) sel.value = prev;
+}
+function addCreditCard(e) {
+  e.preventDefault(); const n = $('newcard-name').value.trim();
+  if (state.cards.some(c => c.name.toLowerCase() === n.toLowerCase())) return toast('Já existe um cartão com esse nome.', true);
+  state.cards.push({ id: uid(), name: n }); $('newcard-name').value = ''; save(); toast('Cartão cadastrado!');
+}
+function renameCreditCard(id, v) {
+  const c = state.cards.find(x => x.id === id), n = v.trim(); if (!c || !n || n === c.name) return renderAll();
+  if (state.cards.some(x => x.id !== id && x.name.toLowerCase() === n.toLowerCase())) { toast('Já existe um cartão com esse nome.', true); return renderAll(); }
+  state.cardExpenses.forEach(x => { if (x.tag === c.name) x.tag = n; }); c.name = n; save();
+}
+function delCreditCard(id) {
+  const c = state.cards.find(x => x.id === id); if (!c) return;
+  if (state.cards.length <= 1) return toast('Mantenha pelo menos um cartão cadastrado.', true);
+  const used = state.cardExpenses.filter(x => x.tag === c.name).length;
+  if (!confirm(used ? `${used} lançamento(s) usam "${c.name}". Eles continuam no extrato com esse nome. Remover o cartão da lista?` : `Remover "${c.name}"?`)) return;
+  state.cards = state.cards.filter(x => x.id !== id); save();
+}
+function renderCreditCards() {
+  const open = invoiceMonth(today());
+  $('cards-list').innerHTML = state.cards.map(c => { const its = state.cardExpenses.filter(x => x.tag === c.name);
+    return `<div class="row flex-wrap"><div class="p-2 rounded-lg bg-indigo-400/10 text-indigo-300"><i data-lucide="credit-card" class="w-4 h-4"></i></div>
+      <input class="inp !w-48 !py-1.5" value="${esc(c.name)}" onchange="renameCreditCard('${c.id}', this.value)">
+      <div class="flex-1 min-w-[190px] text-xs text-slate-400">Fatura de ${ymShort(open)}: <b class="text-indigo-300">${money(sum(its.filter(x => x.month === open), x => x.amount))}</b> · futuras: ${money(sum(its.filter(x => x.month > open), x => x.amount))} · ${its.length} lançamento(s)</div>
+      <button class="ibtn" onclick="delCreditCard('${c.id}')" title="Remover"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; }).join('');
+}
+
+/* ================= VISÃO MÊS A MÊS DO CARTÃO ================= */
+let cardView = null;
+function cardMove(n) { cardView = ymAdd(cardView || invoiceMonth(today()), n); renderCardMonth(); }
+const cf = { mode: 'month', from: '', to: '', fromD: '', toD: '', cat: '', card: '', q: '', group: 'cat' };
+function cfSet(k, v) {
+  cf[k] = v;
+  if (k === 'mode' && v === 'range') { cf.from = cardView; cf.to = ymAdd(cardView, 5); }
+  if (k === 'mode' && v === 'dates') { const t = new Date(); t.setDate(t.getDate() - 30); cf.fromD = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`; cf.toD = today(); }
+  renderCardMonth();
+}
+function cfClear() { Object.assign(cf, { cat: '', card: '', q: '' }); renderCardMonth(); }
+function renderCardMonth() {
+  if (!cardView) cardView = invoiceMonth(today());
+  const tot = {}; state.cardExpenses.forEach(c => tot[c.month] = (tot[c.month] || 0) + c.amount);
+  const all = [...Object.keys(tot), cardView, ymAdd(curYM(), -1), ymAdd(curYM(), 3)].sort(), months = []; for (let m = all[0]; m <= all[all.length - 1]; m = ymAdd(m, 1)) months.push(m);
+  $('card-month').innerHTML = months.map(m => `<option value="${m}" ${m === cardView ? 'selected' : ''}>${ymLong(m)}${tot[m] ? ' — ' + money(tot[m]) : ''}</option>`).join('');
+  const setv = (id, v) => { const e = $(id); if (e && document.activeElement !== e) e.value = v; };
+  $('cf-month-box').style.display = cf.mode === 'month' ? 'flex' : 'none'; $('cf-range-box').style.display = cf.mode === 'range' ? 'flex' : 'none'; $('cf-dates-box').style.display = cf.mode === 'dates' ? 'flex' : 'none';
+  setv('cf-mode', cf.mode); setv('cf-from', cf.from); setv('cf-to', cf.to); setv('cf-fromd', cf.fromD); setv('cf-tod', cf.toD); setv('cf-q', cf.q); setv('cf-group', cf.group);
+  const cfg = cfgFor(cardView); $('cfg-month').textContent = ymLong(cardView); setv('cfg-close', cfg.closing); setv('cfg-due', cfg.due); $('cfg-reset').style.display = state.cardCfg.months[cardView] ? '' : 'none';
+  const catsAll = [...new Set([...state.categories, ...state.cardExpenses.map(c => c.category)])];
+  $('cf-cat').innerHTML = '<option value="">Todas as categorias</option>' + catsAll.map(c => `<option ${c === cf.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
+  $('cf-card').innerHTML = '<option value="">Todos os cartões</option>' + cardNames().map(c => `<option ${c === cf.card ? 'selected' : ''}>${esc(c)}</option>`).join('');
+
+  const items = state.cardExpenses.filter(c => {
+    if (cf.mode === 'month' && c.month !== cardView) return false;
+    if (cf.mode === 'range' && ((cf.from && c.month < cf.from) || (cf.to && c.month > cf.to))) return false;
+    if (cf.mode === 'dates' && ((cf.fromD && (c.date || '') < cf.fromD) || (cf.toD && (c.date || '') > cf.toD))) return false;
+    if (cf.cat && c.category !== cf.cat) return false;
+    if (cf.card && c.tag !== cf.card) return false;
+    if (cf.q && !c.title.toLowerCase().includes(cf.q.toLowerCase())) return false;
+    return true; });
+  const total = sum(items, c => c.amount), parc = sum(items.filter(c => c.of > 1), c => c.amount);
+  $('card-count').textContent = `${items.length} lançamento(s)`;
+  const label = cf.mode === 'month' ? `Fatura de ${ymLong(cardView)} · ${invoiceStatus(cardView)}` : cf.mode === 'range' ? (cf.from && cf.to ? `Faturas de ${ymShort(cf.from)} a ${ymShort(cf.to)}` : 'Intervalo de faturas') : (cf.fromD && cf.toD ? `Compras de ${fdate(cf.fromD)} a ${fdate(cf.toD)}` : 'Intervalo de datas');
+  const filt = [cf.cat, cf.card, cf.q && `"${cf.q}"`].filter(Boolean).join(' · ');
+  let h = `<div class="row flex-wrap justify-between mb-3"><div><div class="text-xs text-slate-400">${label}${filt ? ' · filtro: ' + esc(filt) : ''}</div><b class="text-2xl text-indigo-300">${money(total)}</b></div>
+    <div class="flex gap-2 flex-wrap"><span class="chip">À vista ${money(total - parc)}</span><span class="chip">Parcelas ${money(parc)}</span></div></div>`;
+  if (cf.mode === 'month') { const next = [1, 2, 3, 4].map(i => ymAdd(cardView, i)).filter(m => tot[m]).map(m => `<button class="chip hover:bg-white/10" onclick="cardView='${m}';renderCardMonth()">${ymShort(m)}: ${money(tot[m])}</button>`).join('');
+    if (next) h += `<div class="flex flex-wrap items-center gap-2 mb-5 text-xs text-slate-400">Já lançado nas próximas faturas: ${next}</div>`; }
+  const keyOf = { cat: c => c.category, card: c => c.tag, month: c => c.month, none: () => 'Lançamentos' }[cf.group], by = {};
+  items.forEach(c => (by[keyOf(c)] = by[keyOf(c)] || []).push(c));
+  const gk = Object.keys(by).sort(cf.group === 'month' ? undefined : (a, b) => sum(by[b], x => x.amount) - sum(by[a], x => x.amount));
+  const showCat = cf.group !== 'cat', showCard = cf.group !== 'card', showInv = cf.group !== 'month' && cf.mode !== 'month';
+  h += gk.length ? gk.map(k => { const sub = sum(by[k], x => x.amount);
+    return `<div class="mb-5"><div class="flex justify-between items-center text-sm font-semibold mb-1.5"><span>${cf.group === 'month' ? 'Fatura de ' + ymLong(k) : esc(k)} <span class="chip ml-1">${by[k].length}</span></span><span class="text-indigo-300">${money(sub)}${cf.group !== 'none' && total ? ` <span class="text-xs font-normal text-slate-500">(${Math.round(sub / total * 100)}%)</span>` : ''}</span></div>
+    <div class="overflow-x-auto rounded-xl"><table class="w-full"><tbody>${by[k].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(c => `<tr><td class="text-slate-500 whitespace-nowrap !py-2">${fdate(c.date).slice(0, 5)}</td>
+      <td class="font-medium !py-2">${esc(c.title)}</td><td class="text-slate-400 whitespace-nowrap !py-2">${c.of > 1 ? `${c.n}/${c.of}` : 'À vista'}</td>
+      ${showCard ? `<td class="!py-2"><span class="chip !bg-indigo-400/10 !text-indigo-300">${esc(c.tag)}</span></td>` : ''}${showCat ? `<td class="text-slate-400 !py-2">${esc(c.category)}</td>` : ''}${showInv ? `<td class="text-slate-400 whitespace-nowrap !py-2">${ymShort(c.month)}</td>` : ''}
+      <td class="text-indigo-400 font-semibold whitespace-nowrap !py-2">${money(c.amount)}</td><td class="text-right !py-2">${trash(`delCard('${c.id}')`)}</td></tr>`).join('')}</tbody></table></div></div>`; }).join('')
+    : '<p class="text-center text-slate-500 py-10 text-sm">Nenhum lançamento com esses filtros.</p>';
+  $('card-month-view').innerHTML = h;
+}
+
+/* ================= GASTOS ESTIMADOS ================= */
+function toggleProjKind() { const once = $('proj-kind').value === 'once'; $('proj-end-wrap').classList.toggle('hidden', once); $('proj-start-lbl').textContent = once ? 'Em qual mês' : 'A partir de'; }
+function addProjected(e) {
+  e.preventDefault(); const once = $('proj-kind').value === 'once';
+  state.projectedExpenses.push({ id: uid(), title: $('proj-title').value.trim(), amount: parseFloat($('proj-amount').value), category: $('proj-category').value,
+    kind: $('proj-kind').value, start: $('proj-start').value, end: once ? '' : $('proj-end').value, active: true });
+  $('proj-form').reset(); $('proj-start').value = curYM(); toggleProjKind(); save(); toast('Estimativa adicionada!');
+}
+function updProjected(id, v) { const p = state.projectedExpenses.find(x => x.id === id); if (p) { p.amount = parseFloat(v) || 0; save(); } }
+function togProjected(id) { const p = state.projectedExpenses.find(x => x.id === id); if (p) { p.active = p.active === false; save(); } }
+function delProjected(id) { state.projectedExpenses = state.projectedExpenses.filter(x => x.id !== id); save(); }
+
+/* ================= RENDERIZAÇÃO ================= */
+const emptyRow = (cols, msg) => `<tr><td colspan="${cols}" class="text-center text-slate-500 !py-8">${msg}</td></tr>`;
+const trash = fn => `<button class="ibtn" onclick="${fn}" title="Remover"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
+
+function renderAll() {
+  fillCategorySelects(); fillCardSelects();
+  renderTables(); renderCreditCards(); renderAccounts(); renderInvest(); renderCategories(); renderProjectedList(); renderDashboard(); renderProjection();
+  lucide.createIcons();
+}
+function renderTables() {
+  $('income-count').textContent = `${state.incomes.length} registros`;
+  $('income-body').innerHTML = state.incomes.length ? state.incomes.map(i => {
+    const when = i.recurring ? (i.date ? `Todo dia ${i.date.slice(8)}` : 'Todo mês') : fdate(i.date);
+    return `<tr><td class="font-medium">${esc(i.title)}</td><td class="text-emerald-400 font-semibold">${money(i.amount)}</td><td class="text-slate-400">${when}</td>
+      <td><span class="chip ${i.recurring ? '!bg-emerald-400/10 !text-emerald-300' : ''}">${i.recurring ? 'Recorrente' : 'Pontual'}</span></td><td class="text-right">${trash(`delIncome('${i.id}')`)}</td></tr>`;
+  }).join('') : emptyRow(5, 'Nenhum recebimento cadastrado.');
+
+  $('fixed-count').textContent = `${state.fixedExpenses.length} registros`;
+  $('fixed-body').innerHTML = state.fixedExpenses.length ? state.fixedExpenses.map(f =>
+    `<tr><td class="font-medium">${esc(f.title)}</td><td><span class="chip">${esc(f.category)}</span></td><td class="text-amber-400 font-semibold">${money(f.amount)}</td><td class="text-right">${trash(`delFixed('${f.id}')`)}</td></tr>`
+  ).join('') : emptyRow(4, 'Nenhum gasto fixo cadastrado.');
+
+  renderCardMonth();
+}
+function renderAccounts() {
+  $('acc-total').textContent = money(totalBalance());
+  $('acc-count').textContent = `${state.accounts.length} conta(s)`;
+  $('acc-list').innerHTML = state.accounts.length ? state.accounts.map(a => `
+    <div class="row"><div class="p-2 rounded-lg bg-sky-400/10 text-sky-300"><i data-lucide="landmark" class="w-4 h-4"></i></div>
+      <div class="flex-1 min-w-0 text-sm font-medium truncate">${esc(a.name)}</div>
+      <span class="text-xs text-slate-500">R$</span>
+      <input type="number" step="0.01" value="${a.balance}" onchange="updBalance('${a.id}', this.value)" class="inp !w-32 !py-1.5 !px-2 text-right !text-sky-300" title="Saldo">
+      <button class="ibtn" onclick="delAccount('${a.id}')" title="Remover conta"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('')
+    : '<p class="text-sm text-slate-500 text-center py-6">Nenhuma conta cadastrada. Adicione seu primeiro banco ao lado.</p>';
+}
+function renderBalanceBox(d) {
+  const base = curYM(), rows = projectRows(13), row = rows.find(r => r.ym === viewYM);
+  let html = `<div class="flex items-start justify-between"><div><p class="text-xs text-slate-400">Saldo guardado hoje</p><h3 class="text-3xl font-extrabold text-sky-300 mt-1">${money(totalBalance())}</h3>
+    <p class="text-xs text-slate-500 mt-1">${state.accounts.length ? state.accounts.map(a => esc(a.name)).join(', ') : 'Nenhuma conta cadastrada'}</p></div>
+    <button class="chip hover:bg-white/10" onclick="switchTab('accounts')">Gerenciar contas</button></div>`;
+  if (row) html += `<div class="mt-5 pt-4 border-t border-white/5 flex justify-between items-center"><span class="text-sm text-slate-400">Saldo previsto ao fim de ${ymLong(viewYM)}</span>
+    <b class="text-lg ${row.bal >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(row.bal)}</b></div>`;
+  $('dash-balance').innerHTML = html;
+
+  const c = state.closedMonths[viewYM], box = $('close-box'), title = ymLong(viewYM);
+  if (c) {
+    box.innerHTML = `<h3 class="font-semibold flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>Mês fechado</h3>
+      <p class="text-sm text-slate-300 mt-3">${money(c.amount)} foi somado em <b>${esc(c.accountName)}</b>. Esse valor já está no saldo das contas e não é contado duas vezes na projeção.</p>
+      <button class="chip mt-4 hover:bg-white/10" onclick="undoClose('${viewYM}')">Desfazer fechamento</button>`;
+  } else if (viewYM > base) {
+    box.innerHTML = `<h3 class="font-semibold flex items-center gap-2"><i data-lucide="calendar-clock" class="w-5 h-5 text-sky-400"></i>Fechar o mês</h3>
+      <p class="text-sm text-slate-400 mt-3">Você poderá fechar ${title} quando ele começar, para somar a sobra em uma conta.</p>`;
+  } else {
+    const amt = r2(d.after), opts = state.accounts.map(a => `<option value="${a.id}">Somar em ${esc(a.name)} (${money(a.balance)})</option>`).join('') + '<option value="__new__">Criar nova conta…</option>';
+    box.innerHTML = `<h3 class="font-semibold flex items-center gap-2"><i data-lucide="piggy-bank" class="w-5 h-5 text-sky-400"></i>Fechar o mês</h3>
+      <p class="text-sm text-slate-300 mt-3">${amt >= 0 ? 'Sobraram' : 'Faltaram'} <b class="${amt >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(Math.abs(amt))}</b> em ${title}. Esse valor está correto?</p>
+      <p class="text-xs text-slate-500 mt-1">Receita ${money(d.income)} − fixos ${money(d.fixed)} − cartão ${money(d.card)} − estimado a gastar ${money(d.estRem)}</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <div><label class="lbl">Valor a guardar (ajuste se precisar)</label><input class="inp" type="number" step="0.01" id="close-amount" value="${amt}"></div>
+        <div><label class="lbl">Onde guardar</label><select class="inp" id="close-acc" onchange="toggleNewAcc()">${opts}</select></div>
+      </div>
+      <input class="inp mt-3 hidden" id="close-newname" list="bank-list" maxlength="30" placeholder="Nome da nova conta (ex: Mercado Pago)">
+      <button class="btn bg-sky-600 mt-4" onclick="confirmClose()"><i data-lucide="check" class="w-4 h-4"></i>Confirmar e somar ao saldo</button>`;
+    if (!state.accounts.length) { $('close-acc').value = '__new__'; toggleNewAcc(); }
+  }
+}
+function renderCategories() {
+  $('cat-list').innerHTML = state.categories.map((c, i) =>
+    `<span class="chip !text-sm !pl-3 !pr-1.5 !py-1.5">${esc(c)}<button class="ibtn !p-0.5" onclick="delCategory(${i})" title="Remover"><i data-lucide="x" class="w-3.5 h-3.5"></i></button></span>`).join('');
+}
+function renderProjectedList() {
+  const list = $('projected-list');
+  $('proj-now').textContent = money(monthData(curYM()).est);
+  list.innerHTML = state.projectedExpenses.length ? state.projectedExpenses.map(p => {
+    const period = p.kind === 'once' ? `Só em ${ymShort(p.start)}` : `Todo mês desde ${ymShort(p.start)}${p.end ? ' até ' + ymShort(p.end) : ''}`;
+    return `<div class="row ${p.active === false ? 'opacity-50' : ''}">
+      <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${esc(p.title)}</div><div class="text-xs text-slate-500 truncate">${esc(p.category)} • ${period}</div></div>
+      <input type="number" step="0.01" value="${p.amount}" onchange="updProjected('${p.id}', this.value)" class="inp !w-24 !py-1.5 !px-2 text-right !text-cyan-300 !text-xs" title="Valor">
+      <button class="ibtn !text-slate-400" onclick="togProjected('${p.id}')" title="${p.active === false ? 'Ativar' : 'Pausar'}"><i data-lucide="${p.active === false ? 'play' : 'pause'}" class="w-4 h-4"></i></button>
+      <button class="ibtn" onclick="delProjected('${p.id}')" title="Remover"><i data-lucide="x" class="w-4 h-4"></i></button></div>`;
+  }).join('') : '<p class="text-xs text-slate-500 text-center py-3">Nenhuma estimativa cadastrada.</p>';
+}
+
+function chart(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id).getContext('2d'), cfg); }
+const axisOpt = { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8' } };
+
+function renderDashboard() {
+  buildMonthSelect();
+  const d = monthData(viewYM), base = curYM(), c = cfgFor(viewYM);
+  $('dash-month-title').textContent = ymLong(viewYM);
+  $('dash-month-tag').textContent = `${viewYM === base ? 'Mês atual' : (viewYM < base ? 'Mês passado' : 'Mês futuro')} · ${invoiceStatus(viewYM)}`;
+  $('kpi-income').textContent = money(d.income); $('kpi-fixed').textContent = money(d.fixed); $('kpi-card').textContent = money(d.card);
+  $('kpi-card-sub').textContent = `${d.cardCount} lançamento(s) · vence dia ${pad(c.due)}/${viewYM.slice(5)}`;
+  const n = $('kpi-net'); n.textContent = money(d.after); n.className = `text-2xl font-bold mt-2 ${d.after >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+  $('kpi-net-sub').textContent = d.estRem > 0 ? `Já reservando ${money(d.estRem)} de gastos estimados` : 'Receita − fixos − fatura';
+
+  const out = d.fixed + d.card + d.estRem, pct = d.income > 0 ? Math.min(Math.round(out / d.income * 100), 100) : (out > 0 ? 100 : 0);
+  $('committed-percentage').textContent = pct + '%';
+  const bar = $('committed-bar'); bar.style.width = pct + '%';
+  bar.className = `h-full transition-all duration-500 ${pct > 85 ? 'bg-rose-500' : pct > 60 ? 'bg-amber-500' : 'bg-indigo-500'}`;
+  $('dash-total').textContent = money(d.fixed + d.card); $('dash-est').textContent = money(d.estRem);
+  const af = $('dash-after'); af.textContent = money(d.after); af.className = d.after >= 0 ? 'text-emerald-400' : 'text-rose-400';
+  const al = $('dash-alert'), bad = d.over > 0 || d.after < 0;
+  al.className = `mt-4 p-4 rounded-xl text-xs ${bad ? 'bg-rose-500/10 text-rose-300' : 'bg-white/5 text-slate-300'}`;
+  al.textContent = d.after < 0 ? 'Atenção: as despesas deste mês superam os recebimentos.' : d.over > 0 ? `Você passou ${money(d.over)} do estimado em ${d.cats.filter(x => x.over > 0).length} categoria(s).` : 'Suas finanças estão equilibradas neste mês.';
+  renderInvoiceBox(d); renderEstBox(d); renderBalanceBox(d);
+  chart('overviewChart', { type: 'doughnut',
+    data: { labels: ['Fixos', 'Fatura', 'Estimado a gastar', 'Sobra'], datasets: [{ data: [d.fixed, d.card, d.estRem, Math.max(0, d.after)], backgroundColor: ['#f59e0b', '#6366f1', '#22d3ee', '#10b981'], borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 10, font: { family: 'Plus Jakarta Sans', size: 11 } } } } } });
+}
+function renderInvoiceBox(d) {
+  const c = state.cardCfg, openYM = invoiceMonth(today());
+  const items = [...d.cardItems].sort((a, b) => (b.date || '').localeCompare(a.date || '') || a.title.localeCompare(b.title));
+  const rows = items.map(x => `<div class="flex items-center gap-3 py-2.5 border-t border-white/5 first:border-0"><span class="text-xs text-slate-500 w-11 shrink-0">${fdate(x.date).slice(0, 5)}</span>
+    <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${esc(x.title)}</div><div class="text-[11px] text-slate-500 truncate">${esc(x.category)}${x.of > 1 ? ` · parcela ${x.n}/${x.of}` : ' · à vista'}</div></div>
+    <b class="text-sm text-indigo-300 whitespace-nowrap">${money(x.amount)}</b></div>`).join('');
+  $('dash-invoice').innerHTML = `<div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+    <div><h3 class="font-semibold flex items-center gap-2"><i data-lucide="credit-card" class="w-5 h-5 text-indigo-400"></i>Fatura de ${ymLong(viewYM)}</h3>
+      <p class="text-xs text-slate-500 mt-1">${invoiceStatus(viewYM)} · últimos lançamentos primeiro</p></div>
+    <div class="text-right"><p class="text-xs text-slate-400">Total da fatura até agora</p><b class="text-2xl text-indigo-300">${money(d.card)}</b></div></div>
+    <div class="flex flex-wrap gap-2 mb-3"><span class="chip">À vista ${money(d.avista)}</span><span class="chip">Parcelas ${money(d.parcelado)}</span><span class="chip">${d.cardCount} lançamento(s)</span>
+      ${viewYM !== openYM ? `<button class="chip !bg-indigo-400/10 !text-indigo-300 hover:!bg-indigo-400/20" onclick="setMonth('${openYM}')">Ver fatura aberta (${ymShort(openYM)})</button>` : ''}</div>
+    <div class="max-h-72 overflow-y-auto pr-1">${rows || '<p class="text-sm text-slate-500 text-center py-8">Nenhum lançamento nesta fatura. Importe o CSV dela na aba Cartão de crédito.</p>'}</div>
+    <button class="chip mt-3 hover:bg-white/10" onclick="cf.mode='month';cardView='${viewYM}';switchTab('card')">Ver fatura completa por categoria →</button>`;
+}
+function renderEstBox(d) {
+  let h = `<h3 class="font-semibold flex items-center gap-2 mb-1"><i data-lucide="target" class="w-5 h-5 text-cyan-400"></i>Estimado × gasto no cartão</h3><p class="text-xs text-slate-500 mb-4">O que já foi no cartão abate do estimado da categoria.</p>`;
+  const over = d.cats.filter(x => x.over > 0);
+  if (over.length) h += `<div class="p-3 rounded-xl bg-rose-500/10 text-rose-300 text-xs mb-4 space-y-1"><b>Acima do estimado: +${money(d.over)} no total</b>${over.map(x => `<div>${esc(x.cat)}: +${money(x.over)} (gasto ${money(x.card)} de ${money(x.est)})</div>`).join('')}</div>`;
+  h += d.cats.length ? `<div class="space-y-3">${d.cats.map(x => { const p = x.est > 0 ? Math.round(x.card / x.est * 100) : 100;
+    return `<div><div class="flex justify-between text-xs mb-1"><span class="font-medium text-slate-200">${esc(x.cat)}</span><span class="${x.over > 0 ? 'text-rose-400' : 'text-slate-400'}">${money(x.card)} / ${money(x.est)}</span></div>
+      <div class="h-2 bg-white/5 rounded-full overflow-hidden"><div class="h-full ${p > 100 ? 'bg-rose-500' : p > 80 ? 'bg-amber-500' : 'bg-cyan-500'}" style="width:${Math.min(p, 100)}%"></div></div></div>`; }).join('')}</div>`
+    : '<p class="text-sm text-slate-500 text-center py-6">Nenhuma estimativa ativa neste mês. Cadastre na aba Projeção.</p>';
+  if (d.semEst > 0) h += `<p class="text-xs text-slate-500 mt-4">Cartão em categorias sem estimativa: ${money(d.semEst)}</p>`;
+  $('dash-estcard').innerHTML = h;
+}
+
+function renderProjection() {
+  const rows = projectRows(13).slice(1), start = totalBalance(), end = rows[11].bal, labels = rows.map(r => ymShort(r.ym));
+  $('proj-body').innerHTML = rows.map(r => { const d = r.d;
+    return `<tr><td class="font-medium whitespace-nowrap">${ymShort(r.ym)}</td><td class="text-emerald-400">${money(d.income)}</td><td class="text-amber-400">${money(d.fixed)}</td>
+      <td class="text-indigo-400">${money(d.card)}</td><td class="text-cyan-400">${money(d.estRem)}</td>
+      <td class="font-semibold ${d.after >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(d.after)}${r.closed ? '<div class="text-[11px] font-normal text-slate-500">já somado às contas</div>' : ''}</td>
+      <td class="font-bold ${r.bal >= 0 ? 'text-sky-300' : 'text-rose-400'}">${money(r.bal)}</td></tr>`; }).join('');
+  const t = $('proj-total'); t.textContent = money(end); t.className = `text-3xl font-extrabold mt-1 ${end >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+  const diff = r2(end - start), b = $('proj-badge');
+  b.className = `chip !text-sm !px-4 !py-2 ${diff >= 0 ? '!bg-emerald-400/10 !text-emerald-300' : '!bg-rose-500/10 !text-rose-300'}`;
+  b.innerHTML = `<i data-lucide="${diff >= 0 ? 'trending-up' : 'alert-triangle'}" class="w-4 h-4"></i>${diff >= 0 ? 'Patrimônio crescendo' : 'Alerta de déficit'}`;
+  $('proj-text').textContent = diff >= 0
+    ? `Você tem ${money(start)} hoje e deve acumular mais ${money(diff)} nos próximos 12 meses.`
+    : `Você tem ${money(start)} hoje, mas a projeção mostra uma queda de ${money(Math.abs(diff))} em 12 meses. Revise seus gastos.`;
+  chart('projectionChart', { data: { labels, datasets: [
+      { type: 'bar', label: 'Sobra do mês', data: rows.map(r => r.d.after), backgroundColor: rows.map(r => r.d.after >= 0 ? 'rgba(52,211,153,.55)' : 'rgba(251,113,133,.6)'), borderRadius: 6 },
+      { type: 'line', label: 'Saldo em contas', data: rows.map(r => r.bal), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.08)', tension: .3, pointRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: axisOpt, y: axisOpt }, plugins: { legend: { labels: { color: '#94a3b8' } } } } });
+}
+
+/* ================= IMPORTAR FATURA (CSV) ================= */
+let imp = null;
+function parseCSV(t) {
+  t = t.replace(/^\uFEFF/, ''); const sep = t.slice(0, 800).includes(';') ? ';' : ',', rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < t.length; i++) { const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true; else if (ch === sep) { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i + 1] === '\n') i++; row.push(cur); cur = ''; if (row.some(x => x.trim())) rows.push(row); row = []; }
+    else cur += ch; }
+  row.push(cur); if (row.some(x => x.trim())) rows.push(row); return rows;
+}
+function parseMoney(v) { v = String(v).replace(/[R$\s]/g, ''); if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.'); const n = parseFloat(v); return isNaN(n) ? null : n; }
+function parseDate(v) {
+  let m = String(v).match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = String(v).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${pad(m[2])}-${pad(m[1])}`; return '';
+}
+function detectInst(desc) {
+  const m = desc.match(/parc(?:ela)?\.?\s*(\d{1,2})\s*(?:\/|de)\s*(\d{1,2})/i) || desc.match(/(\d{1,2})\s*(?:\/|de)\s*(\d{1,2})\s*$/i);
+  if (m) { const n = +m[1], of = +m[2]; if (of >= 2 && of <= 60 && n >= 1 && n <= of) return { n, of, title: desc.replace(m[0], '').replace(/[\s\-–:()]+$/, '').trim() || desc }; }
+  return { n: 1, of: 1, title: desc };
+}
+function openImport(ev) {
+  const f = ev.target.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = () => { const buf = r.result; let txt;
+    try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { txt = new TextDecoder('windows-1252').decode(buf); }
+    try { startImport(txt); } catch (e) { toast('Não consegui ler este CSV. Verifique se é o extrato do cartão.', true); } };
+  r.readAsArrayBuffer(f); ev.target.value = '';
+}
+function buildImportRows(txt) {
+  const all = parseCSV(txt), h = all.findIndex(r => r.some(c => /^\W*(data|date)/i.test(c)) && r.some(c => /valor|amount|value/i.test(c)));
+  const hd = h >= 0 ? all[h] : [], find = re => hd.findIndex(c => re.test(c));
+  let iD = find(/^\W*(data|date)/i), iT = find(/descri|estabelec|lan[cç]amento|hist[oó]rico|title|t[ií]tulo|detalhe/i), iV = find(/valor|amount|value/i), iC = find(/categoria|category/i), iP = find(/parcel|installment|prest/i);
+  if (h < 0) { iD = 0; iT = 1; iV = all[0].length - 1; }
+  if (iT < 0) iT = hd.findIndex((c, i) => ![iD, iV, iC, iP].includes(i));
+  const rows = [];
+  all.slice(h + 1).forEach(r => {
+    const val = parseMoney(r[iV] ?? ''), desc = (r[iT] || '').trim(); if (val === null || !desc) return;
+    let d = detectInst(desc);
+    if (d.of === 1) { // parcela pode vir em coluna própria ("6 de 7", "06/07"...)
+      const cells = iP >= 0 ? [r[iP] || ''] : r.filter((_, i) => ![iD, iT, iV, iC].includes(i) && !/data|date|valor|amount/i.test(hd[i] || ''));
+      for (const c of cells) { const x = detectInst(c.trim()); if (x.of > 1) { d = { n: x.n, of: x.of, title: desc }; break; } }
+    }
+    const prev = state.cardExpenses.find(c => c.title.toLowerCase() === d.title.toLowerCase());
+    const csvCat = iC >= 0 ? state.categories.find(c => c.toLowerCase() === (r[iC] || '').trim().toLowerCase()) : null;
+    const skip = val <= 0 || /pagamento (recebido|de fatura)|saldo anterior|total da fatura/i.test(desc);
+    rows.push({ chk: !skip, date: parseDate(r[iD] || ''), title: d.title, cat: csvCat || (prev && prev.category) || (state.categories.includes('Outros') ? 'Outros' : state.categories[0]), n: d.n, of: d.of, val: Math.abs(val), neg: val <= 0 });
+  });
+  return rows;
+}
+function startImport(txt) {
+  const rows = buildImportRows(txt); if (!rows.length) return toast('Nenhum lançamento encontrado no arquivo.', true);
+  const V = invoiceMonth(today()); rows.forEach(r => { if (impDup(r, V)) r.chk = false; });
+  $('imp-tag').innerHTML = state.cards.map(c => `<option>${esc(c.name)}</option>`).join(''); imp = { rows, V, tag: state.cards[0] ? state.cards[0].name : 'Cartão principal' }; $('imp-month').value = V; $('imp-modal').classList.remove('hidden'); impRender();
+}
+const impDup = (r, V) => state.cardExpenses.some(c => c.month === V && c.title.toLowerCase() === r.title.toLowerCase() && Math.abs(c.amount - r.val) < .01);
+function impMonth(v) { if (v) { imp.V = v; impRender(); } }
+function impSet(i, k, v) { const r = imp.rows[i]; r[k] = (k === 'n' || k === 'of') ? Math.max(1, parseInt(v) || 1) : k === 'val' ? Math.abs(parseFloat(v) || 0) : v; if (r.n > r.of) { k === 'of' ? r.n = r.of : r.of = r.n; } }
+function impRender() {
+  const V = imp.V;
+  $('imp-hint').textContent = `Fatura de ${ymLong(V)}: vence dia ${cfgFor(V).due}. Parcela "3 de 8" cria 2 parcelas anteriores (controle) e 5 futuras.`;
+  $('imp-body').innerHTML = imp.rows.map((r, i) => {
+    const dup = impDup(r, V), opts = state.categories.map(c => `<option ${c === r.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
+    const info = r.of > 1 ? `${r.of}x · total ${money(r.val * r.of)}<br>${ymShort(ymAdd(V, 1 - r.n))} → ${ymShort(ymAdd(V, r.of - r.n))}${r.n > 1 ? ` · ${r.n - 1} anterior(es) só p/ controle` : ''}` : 'À vista';
+    return `<tr class="${r.chk ? '' : 'opacity-50'}"><td><input type="checkbox" class="w-4 h-4 accent-indigo-500" ${r.chk ? 'checked' : ''} onchange="impSet(${i},'chk',this.checked);impRender()"></td>
+      <td class="whitespace-nowrap text-slate-400">${fdate(r.date)}</td>
+      <td><input class="inp !py-1.5 min-w-[160px]" value="${esc(r.title)}" onchange="impSet(${i},'title',this.value);impRender()">${dup ? '<div class="text-[11px] text-amber-400 mt-1">Já lançado nesta fatura</div>' : ''}${r.neg ? '<div class="text-[11px] text-slate-500 mt-1">Crédito / pagamento / estorno</div>' : ''}</td>
+      <td><select class="inp !py-1.5 min-w-[130px]" onchange="impSet(${i},'cat',this.value)">${opts}</select></td>
+      <td><div class="flex items-center gap-1 text-slate-500"><input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.n}" onchange="impSet(${i},'n',this.value);impRender()">/<input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.of}" onchange="impSet(${i},'of',this.value);impRender()"></div></td>
+      <td><input type="number" step="0.01" class="inp !w-28 !py-1.5" value="${r.val}" onchange="impSet(${i},'val',this.value);impRender()"></td>
+      <td class="text-xs text-slate-400 whitespace-nowrap">${info}</td></tr>`;
+  }).join('');
+  const sel = imp.rows.filter(r => r.chk), inv = sum(sel, r => r.val), future = sum(sel, r => r.val * (r.of - r.n)), made = sum(sel, r => r.of);
+  $('imp-sum').innerHTML = `<b>${sel.length}</b> de ${imp.rows.length} selecionados · Total da fatura de ${ymShort(imp.V)}: <b class="text-indigo-300">${money(inv)}</b> · Parcelas futuras: <b>${money(future)}</b> · ${made} lançamentos serão criados`;
+  lucide.createIcons();
+}
+function closeImport() { $('imp-modal').classList.add('hidden'); imp = null; }
+function confirmImport() {
+  // compara só com o que já existia ANTES da importação (compras iguais na mesma fatura não são descartadas)
+  const before = [...state.cardExpenses]; let added = 0, skipped = 0;
+  const has = (m, r) => before.some(c => c.month === m && c.title.toLowerCase() === r.title.toLowerCase() && Math.abs(c.amount - r.val) < .01);
+  imp.rows.filter(r => r.chk).forEach(r => { const gid = uid(), date = r.date || today();
+    for (let k = 1; k <= r.of; k++) { const month = ymAdd(imp.V, k - r.n);
+      if (has(month, r)) { skipped++; continue; }
+      state.cardExpenses.push({ id: gid + '-' + k, groupId: gid, title: r.title, amount: r.val, date, month, tag: imp.tag, category: r.cat, n: k, of: r.of }); added++; } });
+  cardView = imp.V; cf.mode = 'month'; closeImport(); save(); toast(`${added} lançamento(s) criados${skipped ? `, ${skipped} já existiam` : ''}.`);
+}
+
+/* ================= APLICAÇÕES (CDB) ================= */
+// Regras: IOF regressivo só sobre o rendimento nos primeiros 29 dias (96% no dia 1 até 0% no dia 30). Depois o IR regressivo incide sobre o que sobrou.
+const IOF_TAB = [96, 93, 90, 86, 83, 80, 76, 73, 70, 66, 63, 60, 56, 53, 50, 46, 43, 40, 36, 33, 30, 26, 23, 20, 16, 13, 10, 6, 3, 0];
+const irRate = days => days <= 180 ? .225 : days <= 360 ? .20 : days <= 720 ? .175 : .15;
+const irBand = days => days <= 180 ? 0 : days <= 360 ? 1 : days <= 720 ? 2 : 3;
+const BAND_LBL = ['Até 180 dias · 22,5%', '181 a 360 dias · 20%', '361 a 720 dias · 17,5%', 'Acima de 720 dias · 15%'];
+const daysOf = months => Math.round(months * 365 / 12);
+function taxOn(gain, days) {
+  const iof = days >= 30 ? 0 : gain * IOF_TAB[Math.max(1, days) - 1] / 100, ir = (gain - iof) * irRate(days);
+  return { iof, ir };
+}
+function simulate(P) {
+  const rows = [];
+  for (let t = 1; t <= P.months; t++) { let inv = 0, gross = 0, tax = 0;
+    const dep = (a, k) => { const age = t - k, g = a * Math.pow(1 + P.annual, age / 12), x = taxOn(g - a, daysOf(age)); inv += a; gross += g; tax += x.iof + x.ir; };
+    if (P.initial > 0) dep(P.initial, 0); if (P.monthly > 0) for (let k = 1; k <= t; k++) dep(P.monthly, k);
+    rows.push({ t, inv, gross, net: gross - tax, tax }); }
+  return rows;
+}
+// Tributação de cada aporte no último mês, agrupada pela faixa de IR do tempo aplicado
+function taxBreakdown(P) {
+  const b = [0, 1, 2, 3].map(() => ({ n: 0, inv: 0, gain: 0, iof: 0, ir: 0 })), t = P.months;
+  const dep = (a, k) => { const age = t - k, days = daysOf(age), gain = a * Math.pow(1 + P.annual, age / 12) - a, x = taxOn(gain, days), o = b[irBand(days)]; o.n++; o.inv += a; o.gain += gain; o.iof += x.iof; o.ir += x.ir; };
+  if (P.initial > 0) dep(P.initial, 0); if (P.monthly > 0) for (let k = 1; k <= t; k++) dep(P.monthly, k);
+  return b;
+}
+function renderRedeem() {
+  const v = state.invest, annual = v.cdi / 100 * v.pct / 100, val = parseFloat($('inv-r-val').value) || 0, days = Math.max(1, parseInt($('inv-r-days').value) || 1);
+  const gain = val * (Math.pow(1 + annual, days / 365) - 1), x = taxOn(gain, days), net = gain - x.iof - x.ir;
+  $('inv-r-out').innerHTML = `Rendimento bruto <b>${money(gain)}</b> · IOF <b class="text-amber-400">${money(x.iof)}</b> (${days >= 30 ? 0 : IOF_TAB[days - 1]}%) · IR <b class="text-amber-400">${money(x.ir)}</b> (${(irRate(days) * 100).toString().replace('.', ',')}%) · Rendimento líquido <b class="text-emerald-400">${money(net)}</b> · Total resgatado <b class="text-violet-300">${money(val + net)}</b>`;
+}
+function invCalc() { const g = id => parseFloat($(id).value) || 0; state.invest = { cdi: g('inv-cdi'), pct: g('inv-pct') || 100, initial: g('inv-init'), monthly: g('inv-month'), end: $('inv-end').value || state.invest.end }; save(); }
+function invQuick(y) { state.invest.end = ymAdd(curYM(), y * 12); save(); }
+function renderInvest() {
+  const v = state.invest; if (!v.end) v.end = ymAdd(curYM(), 120);
+  [['inv-init', v.initial], ['inv-month', v.monthly], ['inv-end', v.end], ['inv-cdi', v.cdi], ['inv-pct', v.pct]].forEach(([id, x]) => { const e = $(id); if (e && document.activeElement !== e) e.value = x; });
+  const [cy, cm] = curYM().split('-').map(Number), [ey, em] = v.end.split('-').map(Number), months = Math.max(1, Math.min(480, (ey - cy) * 12 + (em - cm)));
+  const annual = v.cdi / 100 * v.pct / 100, rows = simulate({ initial: v.initial, monthly: v.monthly, months, annual }), L = rows[rows.length - 1];
+  $('inv-k1').textContent = money(L.inv); $('inv-k2').textContent = money(L.net - L.inv); $('inv-k3').textContent = money(L.gross - L.net); $('inv-k4').textContent = money(L.net);
+  $('inv-sub').textContent = `${months} meses · taxa bruta efetiva de ${(annual * 100).toFixed(2).replace('.', ',')}% a.a. · cada aporte é tributado pelo seu próprio tempo de aplicação`;
+  $('inv-body').innerHTML = rows.filter(r => r.t % 12 === 0 || r.t === months).map(r => `<tr><td class="font-medium whitespace-nowrap">${ymShort(ymAdd(curYM(), r.t))}</td><td>${money(r.inv)}</td><td class="text-emerald-400">${money(r.net - r.inv)}</td><td class="font-bold text-violet-300">${money(r.net)}</td></tr>`).join('');
+  const tb = taxBreakdown({ initial: v.initial, monthly: v.monthly, months, annual }), T = tb.reduce((a, o) => ({ n: a.n + o.n, inv: a.inv + o.inv, gain: a.gain + o.gain, iof: a.iof + o.iof, ir: a.ir + o.ir }), { n: 0, inv: 0, gain: 0, iof: 0, ir: 0 });
+  $('inv-tax').innerHTML = tb.map((o, i) => o.n ? `<tr><td class="whitespace-nowrap">${BAND_LBL[i]}</td><td>${o.n}</td><td>${money(o.inv)}</td><td>${money(o.gain)}</td><td class="text-amber-400">${money(o.iof)}</td><td class="text-amber-400">${money(o.ir)}</td><td class="text-emerald-400 font-semibold">${money(o.gain - o.iof - o.ir)}</td></tr>` : '').join('')
+    + `<tr class="font-bold"><td>Total</td><td>${T.n}</td><td>${money(T.inv)}</td><td>${money(T.gain)}</td><td class="text-amber-400">${money(T.iof)}</td><td class="text-amber-400">${money(T.ir)}</td><td class="text-emerald-400">${money(T.gain - T.iof - T.ir)}</td></tr>`;
+  renderRedeem();
+  chart('investChart', { type: 'line', data: { labels: rows.map(r => ymShort(ymAdd(curYM(), r.t))), datasets: [
+    { label: 'Total aportado', data: rows.map(r => r.inv), borderColor: '#94a3b8', borderDash: [5, 4], pointRadius: 0, tension: .2 },
+    { label: 'Valor líquido', data: rows.map(r => r.net), borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,.12)', fill: true, pointRadius: 0, tension: .2 }] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: axisOpt, y: axisOpt }, plugins: { legend: { labels: { color: '#94a3b8' } } } } });
+}
+
+/* ================= INÍCIO ================= */
+let lastDay = '';
+// Se a aba ficou aberta e o dia virou, atualiza para a fatura aberta de hoje ao voltar para ela
+document.addEventListener('visibilitychange', () => { if (!document.hidden && lastDay && lastDay !== today()) { lastDay = today(); viewYM = invoiceMonth(today()); renderAll(); } });
+window.onload = () => {
+  load(); viewYM = invoiceMonth(today()); lastDay = today(); $('card-date').value = today(); $('inc-date').value = today(); $('proj-start').value = curYM();
+  switchTab('dashboard');
+};
+</script>
+<script type="module">
+const cfg = window.FIREBASE_CONFIG, cloud = cfg && cfg.apiKey && !cfg.apiKey.startsWith('COLE') && location.protocol.startsWith('http');
+if (cloud) {
+  window.CLOUD_ON = true;
+  const el = id => document.getElementById(id), setSt = t => { const e = el('cloud-status'); if (e) e.textContent = t; };
+  el('auth-gate').style.display = 'flex';
+  const V = '10.12.2', B = `https://www.gstatic.com/firebasejs/${V}/`;
+  const [{ initializeApp }, { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut }, { getFirestore, collection, doc, setDoc, onSnapshot, serverTimestamp }] =
+    await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
+  const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
+  // Cada parte dos dados é um documento; só o que mudou é enviado.
+  const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards'];
+  let last = {}, ready = false, unsub = null, user = null;
+  window.cloudLogin = async () => {
+    const p = new GoogleAuthProvider();
+    try { await signInWithPopup(auth, p); }
+    catch (e) { if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, p); else if (!/popup-closed|cancelled/.test(e.code || '')) el('auth-msg').textContent = 'Não foi possível entrar: ' + (e.code || e.message); }
+  };
+  window.cloudLogout = () => signOut(auth);
+  window.cloudPush = async () => {
+    if (!ready || !user) return; const s = cloudGet();
+    for (const k of KEYS) { const v = JSON.stringify(s[k] ?? null); if (last[k] === v) continue; last[k] = v;
+      try { await setDoc(doc(db, 'households', 'main', 'data', k), { v, by: user.email, t: serverTimestamp() }); setSt('☁ Sincronizado · ' + user.email); }
+      catch (e) { delete last[k]; setSt('⚠ Não foi possível salvar online (' + (e.code === 'permission-denied' ? 'sem permissão' : 'sem internet') + ')'); } }
+  };
+  onAuthStateChanged(auth, u => {
+    user = u; ready = false; if (unsub) { unsub(); unsub = null; }
+    el('cloud-out').style.display = u ? '' : 'none';
+    if (!u) { el('auth-gate').style.display = 'flex'; setSt(''); return; }
+    el('auth-gate').style.display = 'none'; setSt('Sincronizando…');
+    unsub = onSnapshot(collection(db, 'households', 'main', 'data'), snap => {
+      if (snap.metadata.hasPendingWrites) return;
+      const remote = {}; snap.forEach(d => { remote[d.id] = d.data().v; });
+      const next = { ...cloudGet() }; let changed = false;
+      Object.keys(remote).forEach(k => { if (KEYS.includes(k) && remote[k] !== last[k]) { last[k] = remote[k]; next[k] = JSON.parse(remote[k]); changed = true; } });
+      ready = true; if (changed) cloudApply(next);
+      window.cloudPush(); setSt('☁ Sincronizado · ' + u.email);
+    }, err => setSt('⚠ ' + (err.code === 'permission-denied' ? 'Esta conta não tem permissão de acesso' : 'Erro de conexão')));
+  });
+}
+</script>
+</body>
+</html>
