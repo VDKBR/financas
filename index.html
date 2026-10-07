@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finanças Pro</title>
 <meta name="theme-color" content="#0a0f16">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
@@ -34,61 +34,12 @@
   .ibtn { padding: 6px; border-radius: 8px; color: #94a3b8; transition: all .15s; }
   .ibtn:hover { background: rgba(255,255,255,.07); color: #fb7185; }
   .row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; }
-  .c-br { display: none; }
-  #mbar, #bnav, #menu-bg { display: none; }
   @media (max-width: 767px) {
-    html, body { overflow-x: hidden; max-width: 100vw; }
-    body { font-size: 15px; }
-    /* menu lateral vira gaveta; barra de cima e barra de baixo estilo aplicativo */
-    aside { position: fixed !important; top: 0; bottom: 0; left: 0; width: 80% !important; max-width: 300px; z-index: 45; transform: translateX(-100%); transition: transform .22s; overflow-y: auto; min-height: 100vh !important; border-right: 1px solid rgba(255,255,255,.08) !important; border-bottom: 0 !important; padding-top: calc(16px + env(safe-area-inset-top)) !important; }
-    body.menu-open aside { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.6); }
-    body.menu-open #menu-bg { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 44; }
-    #side-foot > .nav-btn, aside nav > .nav-btn { padding: 13px 14px; }
-    #mbar { display: flex; position: sticky; top: 0; z-index: 40; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top)) 14px 10px; background: rgba(10,15,22,.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,.06); }
-    #mbar button { padding: 8px; border-radius: 10px; background: rgba(255,255,255,.06); }
-    #mbar b { font-size: 16px; font-weight: 700; }
-    #bnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(13,19,28,.96); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,.08); }
-    #bnav .bn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; font-size: 10.5px; font-weight: 600; color: #94a3b8; border-radius: 10px; }
-    #bnav .bn svg { width: 22px; height: 22px; }
-    #bnav .bn.active { color: #34d399; }
-    /* conteúdo */
-    main { padding: 14px 12px calc(84px + env(safe-area-inset-bottom)) !important; gap: 0; }
-    main .grid > *, .card { min-width: 0; }
-    .card { padding: 16px; border-radius: 20px; }
-    .inp { font-size: 16px; max-width: 100%; }
-    select.inp { text-overflow: ellipsis; }
-    .ibtn { padding: 10px; }
-    h2.text-2xl { font-size: 1.35rem; }
-    #dash-month-title { font-size: 1.9rem !important; }
-    #month-select { flex: 1; min-width: 0; }
-    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
-    .kpi-grid .card h3 { font-size: 1.1rem !important; }
-    .max-h-80, #card-month-view .max-h-72 { max-height: none !important; }
-    #dash-invoice .max-h-72 { max-height: 20rem; }
-    #toast { left: 12px !important; right: 12px !important; bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
-    th, td { padding: 10px 9px; font-size: 13px; }
-    .overflow-x-auto th:first-child, .overflow-x-auto td:first-child { position: sticky; left: 0; background: #111823; z-index: 1; }
-    /* extrato do cartão: cada lançamento vira um bloco compacto */
-    #card-month-view tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 10px 4px; border-top: 1px solid rgba(255,255,255,.06); }
-    #card-month-view td { display: block; border: 0; padding: 0 !important; background: transparent !important; position: static !important; }
-    #card-month-view .c-title { order: 1; flex: 1 1 0; min-width: 0; font-size: 14px; }
-    #card-month-view .c-amt { order: 2; margin-left: auto; }
-    #card-month-view .c-del { order: 3; }
-    #card-month-view .c-br { display: block; order: 4; flex-basis: 100%; height: 0; }
-    #card-month-view .c-date, #card-month-view .c-par, #card-month-view .c-meta { order: 5; font-size: 11.5px; color: #94a3b8; }
-    /* tela de conferência da importação */
-    #imp-modal { padding: 8px; }
-    #imp-modal .overflow-x-auto { max-height: none !important; }
-    #imp-modal thead { display: none; }
-    #imp-modal table, #imp-modal tbody { display: block; }
-    #imp-body tr { display: grid; grid-template-columns: 28px 1fr 1fr; gap: 6px 8px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.07); }
-    #imp-body td { display: block; padding: 0 !important; border: 0; background: transparent !important; position: static !important; }
-    #imp-body td:nth-child(1) { grid-column: 1; grid-row: 1; } #imp-body td:nth-child(2) { grid-column: 2 / 4; grid-row: 1; font-size: 12px; align-self: center; }
-    #imp-body td:nth-child(3) { grid-column: 1 / 4; grid-row: 2; } #imp-body td:nth-child(4) { grid-column: 1 / 4; grid-row: 3; }
-    #imp-body td:nth-child(5) { grid-column: 1 / 3; grid-row: 4; } #imp-body td:nth-child(6) { grid-column: 3; grid-row: 4; }
-    #imp-body td:nth-child(7) { grid-column: 1 / 4; grid-row: 5; white-space: normal; }
-    #imp-body td .inp { width: 100% !important; min-width: 0 !important; }
-    #imp-body td:nth-child(5) .inp { width: 64px !important; }
+    aside nav { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
+    aside nav > .nav-btn { width: auto; white-space: nowrap; flex: none; padding: 9px 12px; }
+    #side-foot { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+    #side-foot > .nav-btn { width: auto; }
+    main { padding-bottom: 5rem; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -105,16 +56,6 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
   appId: "1:91727667021:web:f17298d16804a35264e104" };
 </script>
 <body class="min-h-screen text-slate-100 antialiased flex flex-col md:flex-row">
-
-<div id="mbar"><button onclick="toggleMenu()" aria-label="Abrir menu"><i data-lucide="menu" class="w-5 h-5"></i></button><b id="mbar-title">Resumo do mês</b></div>
-<div id="menu-bg" onclick="toggleMenu()"></div>
-<nav id="bnav">
-  <button class="bn" data-b="dashboard" onclick="switchTab('dashboard')"><i data-lucide="layout-dashboard"></i><span>Resumo</span></button>
-  <button class="bn" data-b="card" onclick="switchTab('card')"><i data-lucide="credit-card"></i><span>Cartão</span></button>
-  <button class="bn" data-b="fixed" onclick="switchTab('fixed')"><i data-lucide="repeat"></i><span>Fixos</span></button>
-  <button class="bn" data-b="projections" onclick="switchTab('projections')"><i data-lucide="trending-up"></i><span>Projeção</span></button>
-  <button class="bn" onclick="toggleMenu()"><i data-lucide="grid-2x2"></i><span>Mais</span></button>
-</nav>
 
 <div id="auth-gate" class="fixed inset-0 z-50 bg-[#0a0f16] items-center justify-center p-6" style="display:none">
   <div class="card max-w-sm w-full text-center space-y-5">
@@ -176,6 +117,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div><label class="lbl">Esta fatura é de (mês de vencimento)</label><input type="month" class="inp" id="imp-month" onchange="impMonth(this.value)"></div>
       <div><label class="lbl">Cartão</label><select class="inp" id="imp-tag" onchange="imp.tag=this.value"></select></div>
       <div class="text-xs text-slate-400 self-end pb-2" id="imp-hint"></div></div>
+    <div id="imp-detect" class="hidden mb-4 p-3 rounded-xl text-xs"></div>
     <div class="overflow-x-auto max-h-[52vh] overflow-y-auto rounded-xl"><table class="w-full"><thead class="sticky top-0 z-10"><tr><th></th><th>Data</th><th>Descrição</th><th>Categoria</th><th>Parcela</th><th>Valor da parcela</th><th>O que será lançado</th></tr></thead><tbody id="imp-body"></tbody></table></div>
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-5">
       <div id="imp-sum" class="text-sm text-slate-300"></div>
@@ -194,7 +136,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
         <h2 id="dash-month-title" class="text-4xl font-extrabold tracking-tight"></h2>
         <p id="dash-month-tag" class="text-xs text-slate-500 mt-1"></p>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2">
         <button onclick="moveMonth(-1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Mês anterior"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
         <select id="month-select" onchange="setMonth(this.value)" class="inp !w-auto !py-3 cursor-pointer"></select>
         <button onclick="moveMonth(1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Próximo mês"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
@@ -203,7 +145,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       </div>
     </div>
 
-    <div class="kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="card !p-5"><p class="text-xs text-slate-400">Receita</p><h3 id="kpi-income" class="text-2xl font-bold text-emerald-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes + pontuais do mês</p></div>
       <div class="card !p-5"><p class="text-xs text-slate-400">Gastos fixos</p><h3 id="kpi-fixed" class="text-2xl font-bold text-amber-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes mensais</p></div>
       <div class="card !p-5"><p class="text-xs text-slate-400">Fatura do cartão</p><h3 id="kpi-card" class="text-2xl font-bold text-indigo-400 mt-2"></h3><p id="kpi-card-sub" class="text-xs text-slate-500 mt-2"></p></div>
@@ -286,6 +228,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
         <div class="row !py-2 text-sm text-slate-300 flex-wrap"><span class="text-xs text-slate-400">Fatura de <b id="cfg-month" class="text-slate-200"></b>:</span> Fecha dia <input type="number" min="0" max="28" id="cfg-close" onchange="setCfg()" class="inp !w-16 !py-1 !px-2 text-center"> Vence dia <input type="number" min="1" max="31" id="cfg-due" onchange="setCfg()" class="inp !w-16 !py-1 !px-2 text-center">
           <button class="chip hover:bg-white/10" onclick="cfgDefault()" title="Usar estes dias nos meses sem ajuste">Usar como padrão</button><button class="chip hover:bg-white/10" id="cfg-reset" onclick="cfgReset()">Voltar ao padrão</button></div>
         <label class="btn bg-indigo-600 !w-auto px-4 cursor-pointer"><i data-lucide="file-up" class="w-4 h-4"></i>Importar fatura (.csv)<input type="file" accept=".csv,.txt" class="hidden" onchange="openImport(event)"></label>
+        <button id="imp-undo" class="btn !w-auto px-4 bg-white/10 hidden" onclick="undoImport()"><i data-lucide="undo-2" class="w-4 h-4"></i><span id="imp-undo-lbl">Desfazer importação</span></button>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -394,6 +337,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
             <input class="inp" type="number" step="0.01" min="0" id="proj-amount" required placeholder="Valor R$">
             <select class="inp cat-select" id="proj-category"></select>
           </div>
+          <div id="auto-proj" class="rounded-xl border border-cyan-400/15 bg-cyan-400/[.04] p-3 space-y-2.5"></div>
           <select class="inp" id="proj-kind" onchange="toggleProjKind()"><option value="monthly">Todo mês</option><option value="once">Uma vez só</option></select>
           <div class="grid grid-cols-2 gap-3">
             <div><label class="lbl" id="proj-start-lbl">A partir de</label><input class="inp" type="month" id="proj-start" required></div>
@@ -624,14 +568,10 @@ function switchTab(t) {
   document.querySelectorAll('.tab').forEach(e => e.classList.add('hidden'));
   document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('tab-' + t).classList.remove('hidden');
-  document.querySelectorAll('#bnav .bn[data-b]').forEach(b => b.classList.toggle('active', b.dataset.b === t));
-  document.body.classList.remove('menu-open'); const nb = document.querySelector(`.nav-btn[data-tab="${t}"]`); if (nb) $('mbar-title').textContent = nb.textContent.trim();
-  window.scrollTo(0, 0);
   renderAll();
 }
 document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
-function toggleMenu() { document.body.classList.toggle('menu-open'); }
 function toast(msg, err) {
   const t = $('toast'); t.textContent = msg; t.style.borderColor = err ? '#fb7185' : 'rgba(255,255,255,.1)';
   t.classList.remove('hidden'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.add('hidden'), 3000);
@@ -808,10 +748,10 @@ function renderCardMonth() {
   const showCat = cf.group !== 'cat', showCard = cf.group !== 'card', showInv = cf.group !== 'month' && cf.mode !== 'month';
   h += gk.length ? gk.map(k => { const sub = sum(by[k], x => x.amount);
     return `<div class="mb-5"><div class="flex justify-between items-center text-sm font-semibold mb-1.5"><span>${cf.group === 'month' ? 'Fatura de ' + ymLong(k) : esc(k)} <span class="chip ml-1">${by[k].length}</span></span><span class="text-indigo-300">${money(sub)}${cf.group !== 'none' && total ? ` <span class="text-xs font-normal text-slate-500">(${Math.round(sub / total * 100)}%)</span>` : ''}</span></div>
-    <div class="overflow-x-auto rounded-xl"><table class="w-full"><tbody>${by[k].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(c => `<tr><td class="c-date text-slate-500 whitespace-nowrap !py-2">${fdate(c.date).slice(0, 5)}</td>
-      <td class="c-title font-medium !py-2">${esc(c.title)}</td><td class="c-par text-slate-400 whitespace-nowrap !py-2">${c.of > 1 ? `${c.n}/${c.of}` : 'À vista'}</td>
-      ${showCard ? `<td class="c-meta !py-2"><span class="chip !bg-indigo-400/10 !text-indigo-300">${esc(c.tag)}</span></td>` : ''}${showCat ? `<td class="c-meta text-slate-400 !py-2">${esc(c.category)}</td>` : ''}${showInv ? `<td class="c-meta text-slate-400 whitespace-nowrap !py-2">${ymShort(c.month)}</td>` : ''}
-      <td class="c-amt text-indigo-400 font-semibold whitespace-nowrap !py-2">${money(c.amount)}</td><td class="c-del text-right !py-2">${trash(`delCard('${c.id}')`)}</td><td class="c-br"></td></tr>`).join('')}</tbody></table></div></div>`; }).join('')
+    <div class="overflow-x-auto rounded-xl"><table class="w-full"><tbody>${by[k].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(c => `<tr><td class="text-slate-500 whitespace-nowrap !py-2">${fdate(c.date).slice(0, 5)}</td>
+      <td class="font-medium !py-2">${esc(c.title)}</td><td class="text-slate-400 whitespace-nowrap !py-2">${c.of > 1 ? `${c.n}/${c.of}` : 'À vista'}</td>
+      ${showCard ? `<td class="!py-2"><span class="chip !bg-indigo-400/10 !text-indigo-300">${esc(c.tag)}</span></td>` : ''}${showCat ? `<td class="text-slate-400 !py-2">${esc(c.category)}</td>` : ''}${showInv ? `<td class="text-slate-400 whitespace-nowrap !py-2">${ymShort(c.month)}</td>` : ''}
+      <td class="text-indigo-400 font-semibold whitespace-nowrap !py-2">${money(c.amount)}</td><td class="text-right !py-2">${trash(`delCard('${c.id}')`)}</td></tr>`).join('')}</tbody></table></div></div>`; }).join('')
     : '<p class="text-center text-slate-500 py-10 text-sm">Nenhum lançamento com esses filtros.</p>';
   $('card-month-view').innerHTML = h;
 }
@@ -822,9 +762,56 @@ function addProjected(e) {
   e.preventDefault(); const once = $('proj-kind').value === 'once';
   state.projectedExpenses.push({ id: uid(), title: $('proj-title').value.trim(), amount: parseFloat($('proj-amount').value), category: $('proj-category').value,
     kind: $('proj-kind').value, start: $('proj-start').value, end: once ? '' : $('proj-end').value, active: true });
+  const np = state.projectedExpenses[state.projectedExpenses.length - 1];
+  if (autoPending && autoPending.cat === np.category && Math.abs(np.amount - autoPending.avg) < 0.005) np.auto = { avg: autoPending.avg, from: autoPending.from, to: autoPending.to, at: today() };
+  autoPending = null;
   $('proj-form').reset(); $('proj-start').value = curYM(); toggleProjKind(); save(); toast('Estimativa adicionada!');
 }
-function updProjected(id, v) { const p = state.projectedExpenses.find(x => x.id === id); if (p) { p.amount = parseFloat(v) || 0; save(); } }
+function updProjected(id, v) { const p = state.projectedExpenses.find(x => x.id === id); if (p) { const n = parseFloat(v) || 0; if (p.auto && Math.abs(n - p.amount) >= 0.005) delete p.auto; p.amount = n; save(); } }
+
+/* ---------- Projeção automática (média das 6 últimas faturas fechadas) ---------- */
+const AUTO_N = 6; let autoPending = null;
+// Faturas fechadas = todas antes da fatura que está aberta hoje
+function autoProjMonths() { const open = invoiceMonth(today()); return Array.from({ length: AUTO_N }, (_, i) => ymAdd(open, i - AUTO_N)); }
+function autoProjCalc(cat) {
+  const months = autoProjMonths();
+  const rows = months.map(ym => { const items = state.cardExpenses.filter(c => c.month === ym);
+    return { ym, has: items.length > 0, val: r2(sum(items.filter(c => c.category === cat), c => c.amount)) }; });
+  const ok = rows.filter(r => r.has).length, avg = r2(Math.max(0, sum(rows, r => r.val) / AUTO_N));
+  return { rows, ok, ready: ok === AUTO_N, avg, from: months[0], to: months[AUTO_N - 1] };
+}
+function renderAutoProj() {
+  const box = $('auto-proj'); if (!box) return;
+  const cat = $('proj-category').value;
+  if (!cat || cat === '__new__') { box.innerHTML = ''; box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const r = autoProjCalc(cat), can = r.ready && r.avg > 0;
+  const grid = r.rows.map(x => `<div class="flex justify-between gap-2 px-2 py-1 rounded-lg bg-black/20 ${x.has ? '' : 'text-rose-300/80'}"><span class="text-slate-500">${ymShort(x.ym)}</span><span>${x.has ? money(x.val) : 'sem fatura'}</span></div>`).join('');
+  const status = !r.ready
+    ? `<p class="text-xs text-amber-300">${r.ok} de ${AUTO_N} faturas lançadas. Lance as faturas que faltam para liberar o cálculo.</p>`
+    : r.avg > 0 ? `<div class="flex justify-between items-baseline text-sm"><span class="text-slate-400">Média por mês</span><b class="text-cyan-300">${money(r.avg)}</b></div>`
+    : `<p class="text-xs text-slate-400">Nenhum gasto em ${esc(cat)} nessas ${AUTO_N} faturas.</p>`;
+  box.innerHTML = `<div class="flex items-center gap-2 text-sm font-semibold text-cyan-200"><i data-lucide="sparkles" class="w-4 h-4"></i>Projeção automática</div>
+    <p class="text-xs text-slate-400">Calcula a média de <b class="text-slate-300">${esc(cat)}</b> nas ${AUTO_N} últimas faturas fechadas (${ymShort(r.from)} a ${ymShort(r.to)}). Para funcionar, você precisa ter os dados de fatura desses ${AUTO_N} meses lançados.</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">${grid}</div>${status}
+    <button type="button" onclick="applyAutoProj()" ${can ? '' : 'disabled'} class="btn !py-2 bg-cyan-500/15 !text-cyan-200 border border-cyan-400/25 ${can ? '' : 'opacity-40 cursor-not-allowed'}"><i data-lucide="wand-2" class="w-4 h-4"></i>Projetar automaticamente</button>`;
+  if (window.lucide) lucide.createIcons();
+}
+function applyAutoProj() {
+  const cat = $('proj-category').value, r = autoProjCalc(cat);
+  if (!r.ready) return toast(`Faltam faturas: ${r.ok} de ${AUTO_N} lançadas.`, true);
+  $('proj-amount').value = r.avg.toFixed(2);
+  if (!$('proj-title').value.trim()) $('proj-title').value = cat;
+  autoPending = { cat, avg: r.avg, from: r.from, to: r.to };
+  toast(`Média aplicada: ${money(r.avg)}. Confira o tipo e o período e clique em "Adicionar estimativa".`);
+}
+function refreshAutoProj(id) {
+  const p = state.projectedExpenses.find(x => x.id === id); if (!p) return;
+  const r = autoProjCalc(p.category);
+  if (!r.ready) return toast(`Não deu para recalcular: ${r.ok} de ${AUTO_N} faturas lançadas.`, true);
+  p.amount = r.avg; p.auto = { avg: r.avg, from: r.from, to: r.to, at: today() }; save();
+  toast(`${p.title}: média atualizada para ${money(r.avg)}.`);
+}
 function togProjected(id) { const p = state.projectedExpenses.find(x => x.id === id); if (p) { p.active = p.active === false; save(); } }
 function delProjected(id) { state.projectedExpenses = state.projectedExpenses.filter(x => x.id !== id); save(); }
 
@@ -834,7 +821,7 @@ const trash = fn => `<button class="ibtn" onclick="${fn}" title="Remover"><i dat
 
 function renderAll() {
   fillCategorySelects(); fillCardSelects();
-  renderTables(); renderCreditCards(); renderAccounts(); renderInvest(); renderCategories(); renderProjectedList(); renderDashboard(); renderProjection();
+  renderTables(); renderCreditCards(); renderAccounts(); renderInvest(); renderCategories(); renderProjectedList(); renderDashboard(); renderProjection(); renderUndo();
   lucide.createIcons();
 }
 function renderTables() {
@@ -899,13 +886,15 @@ function renderCategories() {
     `<span class="chip !text-sm !pl-3 !pr-1.5 !py-1.5">${esc(c)}<button class="ibtn !p-0.5" onclick="delCategory(${i})" title="Remover"><i data-lucide="x" class="w-3.5 h-3.5"></i></button></span>`).join('');
 }
 function renderProjectedList() {
+  renderAutoProj();
   const list = $('projected-list');
   $('proj-now').textContent = money(monthData(curYM()).est);
   list.innerHTML = state.projectedExpenses.length ? state.projectedExpenses.map(p => {
     const period = p.kind === 'once' ? `Só em ${ymShort(p.start)}` : `Todo mês desde ${ymShort(p.start)}${p.end ? ' até ' + ymShort(p.end) : ''}`;
     return `<div class="row ${p.active === false ? 'opacity-50' : ''}">
-      <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${esc(p.title)}</div><div class="text-xs text-slate-500 truncate">${esc(p.category)} • ${period}</div></div>
+      <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${esc(p.title)}</div><div class="text-xs text-slate-500 truncate">${esc(p.category)} • ${period}${p.auto ? ` • <span class="text-cyan-400" title="Média de ${ymShort(p.auto.from)} a ${ymShort(p.auto.to)}, calculada em ${fdate(p.auto.at)}">média ${AUTO_N}m</span>` : ''}</div></div>
       <input type="number" step="0.01" value="${p.amount}" onchange="updProjected('${p.id}', this.value)" class="inp !w-24 !py-1.5 !px-2 text-right !text-cyan-300 !text-xs" title="Valor">
+      ${p.auto ? `<button class="ibtn !text-slate-400 hover:!text-cyan-300" onclick="refreshAutoProj('${p.id}')" title="Recalcular a média com as faturas mais recentes"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>` : ''}
       <button class="ibtn !text-slate-400" onclick="togProjected('${p.id}')" title="${p.active === false ? 'Ativar' : 'Pausar'}"><i data-lucide="${p.active === false ? 'play' : 'pause'}" class="w-4 h-4"></i></button>
       <button class="ibtn" onclick="delProjected('${p.id}')" title="Remover"><i data-lucide="x" class="w-4 h-4"></i></button></div>`;
   }).join('') : '<p class="text-xs text-slate-500 text-center py-3">Nenhuma estimativa cadastrada.</p>';
@@ -1010,7 +999,7 @@ function openImport(ev) {
   const f = ev.target.files[0]; if (!f) return; const r = new FileReader();
   r.onload = () => { const buf = r.result; let txt;
     try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { txt = new TextDecoder('windows-1252').decode(buf); }
-    try { startImport(txt); } catch (e) { toast('Não consegui ler este CSV. Verifique se é o extrato do cartão.', true); } };
+    try { startImport(txt, f.name); } catch (e) { toast('Não consegui ler este CSV. Verifique se é o extrato do cartão.', true); } };
   r.readAsArrayBuffer(f); ev.target.value = '';
 }
 function buildImportRows(txt) {
@@ -1034,42 +1023,86 @@ function buildImportRows(txt) {
   });
   return rows;
 }
-function startImport(txt) {
-  const rows = buildImportRows(txt); if (!rows.length) return toast('Nenhum lançamento encontrado no arquivo.', true);
-  const V = invoiceMonth(today()); rows.forEach(r => { if (impDup(r, V)) r.chk = false; });
-  $('imp-tag').innerHTML = state.cards.map(c => `<option>${esc(c.name)}</option>`).join(''); imp = { rows, V, tag: state.cards[0] ? state.cards[0].name : 'Cartão principal' }; $('imp-month').value = V; $('imp-modal').classList.remove('hidden'); impRender();
+// Descobre de qual fatura é o arquivo: 1) data no nome (ex.: Fatura2026-06-10.csv = vencimento em jun/2026)
+// 2) senão, pela compra à vista mais recente + dia de fechamento
+function detectInvMonth(name, rows) {
+  const m = String(name || '').match(/(20\d{2})[-_.](\d{1,2})(?:[-_.]\d{1,2})?/);
+  if (m && +m[2] >= 1 && +m[2] <= 12) return { ym: `${m[1]}-${pad(m[2])}`, how: 'pela data no nome do arquivo' };
+  const ds = rows.filter(r => r.chk && r.of === 1 && r.date).map(r => r.date).sort();
+  if (ds.length) return { ym: invoiceMonth(ds[ds.length - 1]), how: 'pela data da compra mais recente' };
+  return null;
 }
-const impDup = (r, V) => state.cardExpenses.some(c => c.month === V && c.title.toLowerCase() === r.title.toLowerCase() && Math.abs(c.amount - r.val) < .01);
+// Um mesmo lançamento aparece em várias faturas (parcelas). Ele é identificado por:
+// descrição + nº total de parcelas + qual parcela cai naquele mês + (data da compra OU valor parecido).
+// O valor pode variar centavos entre parcelas (ex.: 1ª de R$ 633,52 e demais de R$ 633,51), por isso a tolerância.
+const normT = t => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
+function findExisting(pool, r, month, k) {
+  const t = normT(r.title);
+  if (r.of > 1) return pool.find(c => c.month === month && (c.of || 1) === r.of && (c.n || 1) === k && normT(c.title) === t &&
+    ((c.date && r.date && c.date === r.date) || Math.abs(c.amount - r.val) <= Math.max(0.10, r.val * 0.01)));
+  return pool.find(c => c.month === month && (c.of || 1) === 1 && normT(c.title) === t && Math.abs(c.amount - r.val) < .01 && (!c.date || !r.date || c.date === r.date));
+}
+function startImport(txt, name) {
+  const rows = buildImportRows(txt); if (!rows.length) return toast('Nenhum lançamento encontrado no arquivo.', true);
+  const det = detectInvMonth(name, rows), V = det ? det.ym : invoiceMonth(today());
+  rows.forEach(r => { const ex = findExisting(state.cardExpenses, r, V, r.n); if (ex && Math.abs(ex.amount - r.val) < .005) r.chk = false; });
+  $('imp-tag').innerHTML = state.cards.map(c => `<option>${esc(c.name)}</option>`).join(''); imp = { rows, V, det, name: name || '', tag: state.cards[0] ? state.cards[0].name : 'Cartão principal' }; $('imp-month').value = V; $('imp-modal').classList.remove('hidden'); impRender();
+}
+const impDup = (r, V) => findExisting(state.cardExpenses, r, V, r.n);
 function impMonth(v) { if (v) { imp.V = v; impRender(); } }
 function impSet(i, k, v) { const r = imp.rows[i]; r[k] = (k === 'n' || k === 'of') ? Math.max(1, parseInt(v) || 1) : k === 'val' ? Math.abs(parseFloat(v) || 0) : v; if (r.n > r.of) { k === 'of' ? r.n = r.of : r.of = r.n; } }
 function impRender() {
   const V = imp.V;
-  $('imp-hint').textContent = `Fatura de ${ymLong(V)}: vence dia ${cfgFor(V).due}. Parcela "3 de 8" cria 2 parcelas anteriores (controle) e 5 futuras.`;
+  $('imp-hint').textContent = `Fatura de ${ymLong(V)}: vence dia ${cfgFor(V).due}. Parcela "3 de 8" cria as 2 anteriores e as 5 futuras, sem repetir as que já existem.`;
+  const dt = $('imp-detect'), det = imp.det, n = state.cardExpenses.filter(c => c.month === V).length;
+  if (det && det.ym !== V) { dt.className = 'mb-4 p-3 rounded-xl text-xs bg-rose-500/10 text-rose-300'; dt.innerHTML = `Atenção: este arquivo parece ser da fatura de <b>${ymLong(det.ym)}</b> (${det.how}), mas você escolheu <b>${ymLong(V)}</b>. Lançar no mês errado faz as compras e parcelas se repetirem. <button class="underline font-semibold" onclick="impMonth('${det.ym}');$('imp-month').value='${det.ym}'">Usar ${ymShort(det.ym)}</button>`; }
+  else if (det) { dt.className = 'mb-4 p-3 rounded-xl text-xs bg-emerald-500/10 text-emerald-300'; dt.innerHTML = `Fatura identificada: <b>${ymLong(det.ym)}</b> (${det.how}).${n ? ` Já existem ${n} lançamento(s) nessa fatura: os repetidos estão desmarcados.` : ''}`; }
+  else { dt.className = 'mb-4 p-3 rounded-xl text-xs bg-amber-500/10 text-amber-300'; dt.innerHTML = 'Não consegui identificar o mês desta fatura. Confira o campo acima antes de confirmar.'; }
   $('imp-body').innerHTML = imp.rows.map((r, i) => {
     const dup = impDup(r, V), opts = state.categories.map(c => `<option ${c === r.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
     const info = r.of > 1 ? `${r.of}x · total ${money(r.val * r.of)}<br>${ymShort(ymAdd(V, 1 - r.n))} → ${ymShort(ymAdd(V, r.of - r.n))}${r.n > 1 ? ` · ${r.n - 1} anterior(es) só p/ controle` : ''}` : 'À vista';
     return `<tr class="${r.chk ? '' : 'opacity-50'}"><td><input type="checkbox" class="w-4 h-4 accent-indigo-500" ${r.chk ? 'checked' : ''} onchange="impSet(${i},'chk',this.checked);impRender()"></td>
       <td class="whitespace-nowrap text-slate-400">${fdate(r.date)}</td>
-      <td><input class="inp !py-1.5 min-w-[160px]" value="${esc(r.title)}" onchange="impSet(${i},'title',this.value);impRender()">${dup ? '<div class="text-[11px] text-amber-400 mt-1">Já lançado nesta fatura</div>' : ''}${r.neg ? '<div class="text-[11px] text-slate-500 mt-1">Crédito / pagamento / estorno</div>' : ''}</td>
+      <td><input class="inp !py-1.5 min-w-[160px]" value="${esc(r.title)}" onchange="impSet(${i},'title',this.value);impRender()">${dup ? (Math.abs(dup.amount - r.val) < .005 ? '<div class="text-[11px] text-amber-400 mt-1">Já lançado nesta fatura</div>' : `<div class="text-[11px] text-cyan-400 mt-1">Parcela já prevista (${money(dup.amount)}): será ajustada para o valor real</div>`) : ''}${r.neg ? '<div class="text-[11px] text-slate-500 mt-1">Crédito / pagamento / estorno</div>' : ''}</td>
       <td><select class="inp !py-1.5 min-w-[130px]" onchange="impSet(${i},'cat',this.value)">${opts}</select></td>
       <td><div class="flex items-center gap-1 text-slate-500"><input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.n}" onchange="impSet(${i},'n',this.value);impRender()">/<input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.of}" onchange="impSet(${i},'of',this.value);impRender()"></div></td>
       <td><input type="number" step="0.01" class="inp !w-28 !py-1.5" value="${r.val}" onchange="impSet(${i},'val',this.value);impRender()"></td>
       <td class="text-xs text-slate-400 whitespace-nowrap">${info}</td></tr>`;
   }).join('');
-  const sel = imp.rows.filter(r => r.chk), inv = sum(sel, r => r.val), future = sum(sel, r => r.val * (r.of - r.n)), made = sum(sel, r => r.of);
+  const sel = imp.rows.filter(r => r.chk), inv = sum(sel, r => r.val), future = sum(sel, r => r.val * (r.of - r.n));
+  let made = 0; sel.forEach(r => { for (let k = 1; k <= r.of; k++) if (!findExisting(state.cardExpenses, r, ymAdd(V, k - r.n), k)) made++; });
   $('imp-sum').innerHTML = `<b>${sel.length}</b> de ${imp.rows.length} selecionados · Total da fatura de ${ymShort(imp.V)}: <b class="text-indigo-300">${money(inv)}</b> · Parcelas futuras: <b>${money(future)}</b> · ${made} lançamentos serão criados`;
   lucide.createIcons();
 }
 function closeImport() { $('imp-modal').classList.add('hidden'); imp = null; }
 function confirmImport() {
   // compara só com o que já existia ANTES da importação (compras iguais na mesma fatura não são descartadas)
-  const before = [...state.cardExpenses]; let added = 0, skipped = 0;
-  const has = (m, r) => before.some(c => c.month === m && c.title.toLowerCase() === r.title.toLowerCase() && Math.abs(c.amount - r.val) < .01);
-  imp.rows.filter(r => r.chk).forEach(r => { const gid = uid(), date = r.date || today();
-    for (let k = 1; k <= r.of; k++) { const month = ymAdd(imp.V, k - r.n);
-      if (has(month, r)) { skipped++; continue; }
-      state.cardExpenses.push({ id: gid + '-' + k, groupId: gid, title: r.title, amount: r.val, date, month, tag: imp.tag, category: r.cat, n: k, of: r.of }); added++; } });
-  cardView = imp.V; cf.mode = 'month'; closeImport(); save(); toast(`${added} lançamento(s) criados${skipped ? `, ${skipped} já existiam` : ''}.`);
+  const before = [...state.cardExpenses], bid = uid(), V = imp.V; let added = 0, skipped = 0, fixed = 0;
+  imp.rows.filter(r => r.chk).forEach(r => { const date = r.date || today(), found = [];
+    for (let k = 1; k <= r.of; k++) found.push(findExisting(before, r, ymAdd(V, k - r.n), k));
+    const gid = (found.find(Boolean) || {}).groupId || uid();
+    found.forEach((ex, i) => { const k = i + 1, month = ymAdd(V, k - r.n);
+      if (ex) { // já existe: na parcela desta fatura, vale o valor real do arquivo
+        if (k === r.n && Math.abs(ex.amount - r.val) >= .005) { if (!ex.impPrev) ex.impPrev = { bid, amount: ex.amount }; ex.amount = r.val; fixed++; } else skipped++;
+        return; }
+      state.cardExpenses.push({ id: gid + '-' + k + '-' + bid, groupId: gid, title: r.title, amount: r.val, date, month, tag: imp.tag, category: r.cat, n: k, of: r.of, imp: bid, impV: V }); added++; });
+  });
+  cardView = V; cf.mode = 'month'; closeImport(); save();
+  toast(`Fatura de ${ymShort(V)}: ${added} lançamento(s) criados${fixed ? `, ${fixed} parcela(s) ajustada(s)` : ''}${skipped ? `, ${skipped} já existiam` : ''}.`);
+}
+// Desfaz a importação mais recente (pode repetir para voltar outras)
+function lastImportId() { let b = ''; state.cardExpenses.forEach(c => { if (c.imp && c.imp > b) b = c.imp; if (c.impPrev && c.impPrev.bid > b) b = c.impPrev.bid; }); return b; }
+function renderUndo() {
+  const b = lastImportId(), btn = $('imp-undo'); if (!btn) return; btn.classList.toggle('hidden', !b); if (!b) return;
+  const one = state.cardExpenses.find(c => c.imp === b); $('imp-undo-lbl').textContent = one ? `Desfazer importação (${ymShort(one.impV)})` : 'Desfazer importação';
+}
+function undoImport() {
+  const b = lastImportId(); if (!b) return;
+  const n = state.cardExpenses.filter(c => c.imp === b).length, one = state.cardExpenses.find(c => c.imp === b);
+  if (!confirm(`Desfazer a última importação${one ? ` (fatura de ${ymLong(one.impV)})` : ''}? ${n} lançamento(s) serão removidos.`)) return;
+  state.cardExpenses = state.cardExpenses.filter(c => c.imp !== b);
+  state.cardExpenses.forEach(c => { if (c.impPrev && c.impPrev.bid === b) { c.amount = c.impPrev.amount; delete c.impPrev; } });
+  save(); toast('Importação desfeita.');
 }
 
 /* ================= APLICAÇÕES (CDB) ================= */
@@ -1129,6 +1162,7 @@ let lastDay = '';
 document.addEventListener('visibilitychange', () => { if (!document.hidden && lastDay && lastDay !== today()) { lastDay = today(); viewYM = invoiceMonth(today()); renderAll(); } });
 window.onload = () => {
   load(); viewYM = invoiceMonth(today()); lastDay = today(); $('card-date').value = today(); $('inc-date').value = today(); $('proj-start').value = curYM();
+  $('proj-category').addEventListener('change', renderAutoProj);
   switchTab('dashboard');
 };
 </script>
