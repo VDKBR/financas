@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Finanças Pro</title>
 <meta name="theme-color" content="#0a0f16">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
@@ -34,12 +34,61 @@
   .ibtn { padding: 6px; border-radius: 8px; color: #94a3b8; transition: all .15s; }
   .ibtn:hover { background: rgba(255,255,255,.07); color: #fb7185; }
   .row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; }
+  .c-br { display: none; }
+  #mbar, #bnav, #menu-bg { display: none; }
   @media (max-width: 767px) {
-    aside nav { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
-    aside nav > .nav-btn { width: auto; white-space: nowrap; flex: none; padding: 9px 12px; }
-    #side-foot { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
-    #side-foot > .nav-btn { width: auto; }
-    main { padding-bottom: 5rem; }
+    html, body { overflow-x: hidden; max-width: 100vw; }
+    body { font-size: 15px; }
+    /* menu lateral vira gaveta; barra de cima e barra de baixo estilo aplicativo */
+    aside { position: fixed !important; top: 0; bottom: 0; left: 0; width: 80% !important; max-width: 300px; z-index: 45; transform: translateX(-100%); transition: transform .22s; overflow-y: auto; min-height: 100vh !important; border-right: 1px solid rgba(255,255,255,.08) !important; border-bottom: 0 !important; padding-top: calc(16px + env(safe-area-inset-top)) !important; }
+    body.menu-open aside { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.6); }
+    body.menu-open #menu-bg { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 44; }
+    #side-foot > .nav-btn, aside nav > .nav-btn { padding: 13px 14px; }
+    #mbar { display: flex; position: sticky; top: 0; z-index: 40; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top)) 14px 10px; background: rgba(10,15,22,.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,.06); }
+    #mbar button { padding: 8px; border-radius: 10px; background: rgba(255,255,255,.06); }
+    #mbar b { font-size: 16px; font-weight: 700; }
+    #bnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(13,19,28,.96); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,.08); }
+    #bnav .bn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; font-size: 10.5px; font-weight: 600; color: #94a3b8; border-radius: 10px; }
+    #bnav .bn svg { width: 22px; height: 22px; }
+    #bnav .bn.active { color: #34d399; }
+    /* conteúdo */
+    main { padding: 14px 12px calc(84px + env(safe-area-inset-bottom)) !important; gap: 0; }
+    main .grid > *, .card { min-width: 0; }
+    .card { padding: 16px; border-radius: 20px; }
+    .inp { font-size: 16px; max-width: 100%; }
+    select.inp { text-overflow: ellipsis; }
+    .ibtn { padding: 10px; }
+    h2.text-2xl { font-size: 1.35rem; }
+    #dash-month-title { font-size: 1.9rem !important; }
+    #month-select { flex: 1; min-width: 0; }
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+    .kpi-grid .card h3 { font-size: 1.1rem !important; }
+    .max-h-80, #card-month-view .max-h-72 { max-height: none !important; }
+    #dash-invoice .max-h-72 { max-height: 20rem; }
+    #toast { left: 12px !important; right: 12px !important; bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    th, td { padding: 10px 9px; font-size: 13px; }
+    .overflow-x-auto th:first-child, .overflow-x-auto td:first-child { position: sticky; left: 0; background: #111823; z-index: 1; }
+    /* extrato do cartão: cada lançamento vira um bloco compacto */
+    #card-month-view tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 10px 4px; border-top: 1px solid rgba(255,255,255,.06); }
+    #card-month-view td { display: block; border: 0; padding: 0 !important; background: transparent !important; position: static !important; }
+    #card-month-view .c-title { order: 1; flex: 1 1 0; min-width: 0; font-size: 14px; }
+    #card-month-view .c-amt { order: 2; margin-left: auto; }
+    #card-month-view .c-del { order: 3; }
+    #card-month-view .c-br { display: block; order: 4; flex-basis: 100%; height: 0; }
+    #card-month-view .c-date, #card-month-view .c-par, #card-month-view .c-meta { order: 5; font-size: 11.5px; color: #94a3b8; }
+    /* tela de conferência da importação */
+    #imp-modal { padding: 8px; }
+    #imp-modal .overflow-x-auto { max-height: none !important; }
+    #imp-modal thead { display: none; }
+    #imp-modal table, #imp-modal tbody { display: block; }
+    #imp-body tr { display: grid; grid-template-columns: 28px 1fr 1fr; gap: 6px 8px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.07); }
+    #imp-body td { display: block; padding: 0 !important; border: 0; background: transparent !important; position: static !important; }
+    #imp-body td:nth-child(1) { grid-column: 1; grid-row: 1; } #imp-body td:nth-child(2) { grid-column: 2 / 4; grid-row: 1; font-size: 12px; align-self: center; }
+    #imp-body td:nth-child(3) { grid-column: 1 / 4; grid-row: 2; } #imp-body td:nth-child(4) { grid-column: 1 / 4; grid-row: 3; }
+    #imp-body td:nth-child(5) { grid-column: 1 / 3; grid-row: 4; } #imp-body td:nth-child(6) { grid-column: 3; grid-row: 4; }
+    #imp-body td:nth-child(7) { grid-column: 1 / 4; grid-row: 5; white-space: normal; }
+    #imp-body td .inp { width: 100% !important; min-width: 0 !important; }
+    #imp-body td:nth-child(5) .inp { width: 64px !important; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -56,6 +105,16 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
   appId: "1:91727667021:web:f17298d16804a35264e104" };
 </script>
 <body class="min-h-screen text-slate-100 antialiased flex flex-col md:flex-row">
+
+<div id="mbar"><button onclick="toggleMenu()" aria-label="Abrir menu"><i data-lucide="menu" class="w-5 h-5"></i></button><b id="mbar-title">Resumo do mês</b></div>
+<div id="menu-bg" onclick="toggleMenu()"></div>
+<nav id="bnav">
+  <button class="bn" data-b="dashboard" onclick="switchTab('dashboard')"><i data-lucide="layout-dashboard"></i><span>Resumo</span></button>
+  <button class="bn" data-b="card" onclick="switchTab('card')"><i data-lucide="credit-card"></i><span>Cartão</span></button>
+  <button class="bn" data-b="fixed" onclick="switchTab('fixed')"><i data-lucide="repeat"></i><span>Fixos</span></button>
+  <button class="bn" data-b="projections" onclick="switchTab('projections')"><i data-lucide="trending-up"></i><span>Projeção</span></button>
+  <button class="bn" onclick="toggleMenu()"><i data-lucide="grid-2x2"></i><span>Mais</span></button>
+</nav>
 
 <div id="auth-gate" class="fixed inset-0 z-50 bg-[#0a0f16] items-center justify-center p-6" style="display:none">
   <div class="card max-w-sm w-full text-center space-y-5">
@@ -135,7 +194,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
         <h2 id="dash-month-title" class="text-4xl font-extrabold tracking-tight"></h2>
         <p id="dash-month-tag" class="text-xs text-slate-500 mt-1"></p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <button onclick="moveMonth(-1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Mês anterior"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
         <select id="month-select" onchange="setMonth(this.value)" class="inp !w-auto !py-3 cursor-pointer"></select>
         <button onclick="moveMonth(1)" class="card !p-3 !rounded-xl hover:bg-white/5" title="Próximo mês"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
@@ -144,7 +203,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="card !p-5"><p class="text-xs text-slate-400">Receita</p><h3 id="kpi-income" class="text-2xl font-bold text-emerald-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes + pontuais do mês</p></div>
       <div class="card !p-5"><p class="text-xs text-slate-400">Gastos fixos</p><h3 id="kpi-fixed" class="text-2xl font-bold text-amber-400 mt-2"></h3><p class="text-xs text-slate-500 mt-2">Recorrentes mensais</p></div>
       <div class="card !p-5"><p class="text-xs text-slate-400">Fatura do cartão</p><h3 id="kpi-card" class="text-2xl font-bold text-indigo-400 mt-2"></h3><p id="kpi-card-sub" class="text-xs text-slate-500 mt-2"></p></div>
@@ -565,10 +624,14 @@ function switchTab(t) {
   document.querySelectorAll('.tab').forEach(e => e.classList.add('hidden'));
   document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('tab-' + t).classList.remove('hidden');
+  document.querySelectorAll('#bnav .bn[data-b]').forEach(b => b.classList.toggle('active', b.dataset.b === t));
+  document.body.classList.remove('menu-open'); const nb = document.querySelector(`.nav-btn[data-tab="${t}"]`); if (nb) $('mbar-title').textContent = nb.textContent.trim();
+  window.scrollTo(0, 0);
   renderAll();
 }
 document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
+function toggleMenu() { document.body.classList.toggle('menu-open'); }
 function toast(msg, err) {
   const t = $('toast'); t.textContent = msg; t.style.borderColor = err ? '#fb7185' : 'rgba(255,255,255,.1)';
   t.classList.remove('hidden'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.add('hidden'), 3000);
@@ -745,10 +808,10 @@ function renderCardMonth() {
   const showCat = cf.group !== 'cat', showCard = cf.group !== 'card', showInv = cf.group !== 'month' && cf.mode !== 'month';
   h += gk.length ? gk.map(k => { const sub = sum(by[k], x => x.amount);
     return `<div class="mb-5"><div class="flex justify-between items-center text-sm font-semibold mb-1.5"><span>${cf.group === 'month' ? 'Fatura de ' + ymLong(k) : esc(k)} <span class="chip ml-1">${by[k].length}</span></span><span class="text-indigo-300">${money(sub)}${cf.group !== 'none' && total ? ` <span class="text-xs font-normal text-slate-500">(${Math.round(sub / total * 100)}%)</span>` : ''}</span></div>
-    <div class="overflow-x-auto rounded-xl"><table class="w-full"><tbody>${by[k].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(c => `<tr><td class="text-slate-500 whitespace-nowrap !py-2">${fdate(c.date).slice(0, 5)}</td>
-      <td class="font-medium !py-2">${esc(c.title)}</td><td class="text-slate-400 whitespace-nowrap !py-2">${c.of > 1 ? `${c.n}/${c.of}` : 'À vista'}</td>
-      ${showCard ? `<td class="!py-2"><span class="chip !bg-indigo-400/10 !text-indigo-300">${esc(c.tag)}</span></td>` : ''}${showCat ? `<td class="text-slate-400 !py-2">${esc(c.category)}</td>` : ''}${showInv ? `<td class="text-slate-400 whitespace-nowrap !py-2">${ymShort(c.month)}</td>` : ''}
-      <td class="text-indigo-400 font-semibold whitespace-nowrap !py-2">${money(c.amount)}</td><td class="text-right !py-2">${trash(`delCard('${c.id}')`)}</td></tr>`).join('')}</tbody></table></div></div>`; }).join('')
+    <div class="overflow-x-auto rounded-xl"><table class="w-full"><tbody>${by[k].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(c => `<tr><td class="c-date text-slate-500 whitespace-nowrap !py-2">${fdate(c.date).slice(0, 5)}</td>
+      <td class="c-title font-medium !py-2">${esc(c.title)}</td><td class="c-par text-slate-400 whitespace-nowrap !py-2">${c.of > 1 ? `${c.n}/${c.of}` : 'À vista'}</td>
+      ${showCard ? `<td class="c-meta !py-2"><span class="chip !bg-indigo-400/10 !text-indigo-300">${esc(c.tag)}</span></td>` : ''}${showCat ? `<td class="c-meta text-slate-400 !py-2">${esc(c.category)}</td>` : ''}${showInv ? `<td class="c-meta text-slate-400 whitespace-nowrap !py-2">${ymShort(c.month)}</td>` : ''}
+      <td class="c-amt text-indigo-400 font-semibold whitespace-nowrap !py-2">${money(c.amount)}</td><td class="c-del text-right !py-2">${trash(`delCard('${c.id}')`)}</td><td class="c-br"></td></tr>`).join('')}</tbody></table></div></div>`; }).join('')
     : '<p class="text-center text-slate-500 py-10 text-sm">Nenhum lançamento com esses filtros.</p>';
   $('card-month-view').innerHTML = h;
 }
