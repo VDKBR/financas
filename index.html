@@ -163,6 +163,82 @@
   #bnav button.active i { filter: drop-shadow(0 0 8px rgba(255,214,10,.6)); }
   /* Com 'reduzir animações' ligado no sistema, só o círculo girando e o brilho contínuo ficam parados; os fades continuam */
   @media (prefers-reduced-motion: reduce) { .hero::after, .hero::before { animation: none !important; } }
+
+  /* ================= MODO CLARO ================= */
+  html.light { color-scheme: light; --bg: #F5F4EF; --card: #FFFFFF; --line: #E8E5DC; --soft: #FAF9F5; --mut: #6B6B6B; }
+  html.light body { color: #141414; background-color: #F5F4EF;
+    background-image: radial-gradient(900px 500px at 100% -10%, rgba(255,214,10,.22), transparent 60%), radial-gradient(700px 500px at -10% 110%, rgba(255,160,0,.12), transparent 60%), radial-gradient(rgba(0,0,0,.05) 1px, transparent 1px); }
+  html.light ::-webkit-scrollbar-thumb { background: #D6D3C8; }
+  html.light .card { background: linear-gradient(160deg, #FFFFFF 0%, #FDFCF8 100%); border-color: var(--line); box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 8px 28px rgba(60,50,10,.07); }
+  html.light .card:not(.hero):not(#modal-box):hover { border-color: #DED9CB; box-shadow: 0 12px 34px rgba(60,50,10,.11), 0 0 0 1px rgba(255,196,0,.18); }
+  html.light .hero { box-shadow: 0 18px 44px rgba(255,180,0,.32), inset 0 1px 0 rgba(255,255,255,.6) !important; }
+  html.light aside { background: linear-gradient(180deg, #FFFFFF, #FBFAF5) !important; border-color: #E8E5DC !important; }
+  html.light aside::before { background: radial-gradient(260px 160px at 20% 0%, rgba(255,214,10,.22), transparent 70%); }
+  html.light .nav-btn:hover { background: #F3F1EA; color: #111; }
+  html.light .nav-btn.active { color: #111; }
+  html.light .nav-sub { color: #7a7a7a; } html.light .nav-sub:hover { background: #F3F1EA; color: #111; } html.light .nav-sub.on { color: #111; font-weight: 600; }
+  html.light .inp { background: #FFFFFF; border-color: #DDD9CE; color: #141414; }
+  html.light .inp::placeholder { color: #A3A09A; }
+  html.light .inp:focus, html.light .dd-btn.dd-open { border-color: #F5B700; box-shadow: 0 0 0 3px rgba(255,196,0,.22); }
+  html.light .dd-btn:hover { border-color: #CFCABB; }
+  html.light .btn { color: #141414; }
+  html.light .btn-soft { background: #FFFFFF; border-color: #E2DED3; } html.light .btn-soft:hover { background: #F6F4EE; }
+  html.light .chip { background: linear-gradient(160deg, #FFFFFF, #F6F4EE); color: #3d3d3d; border-color: #E5E1D6; }
+  html.light button.chip:hover { border-color: #CFCABB; color: #111; }
+  html.light .chip-y, html.light .tone, html.light .pick .ic, html.light .quick .ic { background: linear-gradient(135deg, rgba(255,214,10,.35), rgba(255,170,0,.18)) !important; color: #8A6100 !important; border-color: rgba(230,170,0,.35); }
+  html.light .ibtn:hover { background: #F0EEE6; color: #111; }
+  html.light .row { background: linear-gradient(160deg, #FFFFFF, #FBFAF6); }
+  html.light .row:hover { border-color: rgba(230,170,0,.45); box-shadow: 0 6px 18px rgba(60,50,10,.08); }
+  html.light .quick, html.light .pick { background: linear-gradient(160deg, #FFFFFF, #FAF8F2); }
+  html.light .quick:hover, html.light .pick:hover { box-shadow: 0 10px 24px rgba(60,50,10,.10), 0 0 0 1px rgba(240,180,0,.6); background: #FFFDF3; }
+  html.light .seg { background: rgba(255,255,255,.75); }
+  html.light .seg button:hover { color: #111; }
+  html.light .seg button.on { background: linear-gradient(135deg, #1a1a1a, #000); color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+  html.light .monthnav { background: #FFFFFF; }
+  html.light .monthnav .dd-btn { color: #111; border-color: transparent !important; background-color: transparent; box-shadow: none !important; }
+  html.light th { background: #F6F4EE; } html.light td { border-color: #EFEDE6; }
+  html.light .bar { background: #ECE9E0; }
+  html.light .dd-menu { background: rgba(255,255,255,.96); border-color: rgba(230,170,0,.35); box-shadow: 0 20px 45px rgba(60,50,10,.16); }
+  html.light .dd-opt { color: #2a2a2a; } html.light .dd-opt.hi { color: #111; background: linear-gradient(90deg, rgba(255,214,10,.30), rgba(255,214,10,.08)) !important; }
+  html.light .dd-opt.sel { color: #8A6100; }
+  html.light .dd-menu::-webkit-scrollbar-thumb { background: #DDD; }
+  html.light #modal-box { background: linear-gradient(160deg, #FFFFFF, #FBFAF6); border-color: #E5E1D6; }
+  html.light #modal, html.light #search, html.light #imp-modal { background: rgba(30,25,10,.35) !important; }
+  html.light #toast { background: #141414 !important; color: #fff; }
+  html.light #bnav { background: rgba(255,255,255,.92); border-color: #E8E5DC; }
+  html.light #bnav button { color: #8a8a8a; } html.light #bnav button.active { color: #B88600; }
+  html.light #auth-gate, html.light #ws-gate { background: #F5F4EF !important; }
+  html.light main h2.text-2xl, html.light main h2.text-3xl, html.light #dash-month-title { background-image: linear-gradient(90deg, #141414 55%, #E0A100); }
+  html.light .t-y { color: #A87400; }
+  html.light .text-white, html.light .\!text-white { color: #141414 !important; }
+  html.light .text-neutral-100, html.light .text-neutral-200 { color: #1a1a1a !important; }
+  html.light .text-neutral-300 { color: #3a3a3a !important; }
+  html.light .text-neutral-400 { color: #666 !important; }
+  html.light .text-neutral-500 { color: #8a8a8a !important; }
+  html.light .text-emerald-400, html.light .text-emerald-300 { color: #059669 !important; }
+  html.light .text-rose-400, html.light .text-rose-300 { color: #e11d48 !important; }
+  html.light .bg-rose-500\/10 { background: #FFF1F3 !important; } html.light .bg-emerald-500\/10 { background: #ECFDF5 !important; } html.light .bg-amber-500\/10 { background: #FFFBEB !important; }
+  html.light .bg-white\/5, html.light .bg-white\/10, html.light .\!bg-white\/5 { background: rgba(0,0,0,.05) !important; }
+  html.light .bg-black\/20 { background: rgba(0,0,0,.04) !important; }
+  html.light .bg-white\/\[\.03\] { background: rgba(0,0,0,.025) !important; }
+  html.light .hover\:bg-white\/\[\.03\]:hover, html.light .hover\:bg-white\/10:hover { background: rgba(0,0,0,.04) !important; }
+  html.light .border-white\/5, html.light .border-white\/10 { border-color: rgba(0,0,0,.08) !important; }
+  html.light .bg-y5 { background: rgba(255,214,10,.10); } html.light .border-y { border-color: rgba(230,170,0,.35); }
+  html.light .\!bg-\[\#141414\] { background: #fff !important; } html.light .\!border-\[\#242424\] { border-color: #E5E1D6 !important; }
+  html.light .hero .text-black\/60 { color: rgba(0,0,0,.6) !important; }
+  html.light .kpi b { color: #0A0A0A !important; }
+  html.light input[type=month].inp, html.light input[type=date].inp { color-scheme: light; }
+  html.light option { background: #fff; color: #111; }
+  .theme-sw { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #111; border: 1px solid var(--line); }
+  .theme-sw button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--mut); }
+  .theme-sw button.on { background: linear-gradient(135deg, #FFE45C, #FFC300); color: #0A0A0A; box-shadow: 0 4px 12px rgba(255,195,0,.25); }
+  html.light .theme-sw { background: #F3F1EA; }
+  /* Troca de tema: a tela inteira faz um fade único (sem cada letra mudar de cor separada) */
+  .theme-switching *, .theme-switching *::before, .theme-switching *::after { transition: none !important; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; animation-timing-function: ease; mix-blend-mode: normal; }
+  .theme-sw[data-theme-sw="short"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .theme-sw[data-theme-sw="short"] button { padding: 8px 4px; gap: 5px; font-size: 12.5px; min-width: 0; }
+  .theme-sw button { min-width: 0; overflow: hidden; white-space: nowrap; }
   #bnav { display: none; }
   @media (min-width: 768px) { .fab { display: none; } }
   @media (max-width: 767px) {
@@ -177,6 +253,12 @@
   }
 </style>
 </head>
+<script>
+// Tema salvo neste aparelho: 'dark', 'light' ou 'auto' (segue o sistema)
+(function () { var t = 'dark'; try { t = localStorage.getItem('FP_THEME') || 'dark'; } catch (e) {}
+  var light = t === 'light' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.classList.toggle('light', light); })();
+</script>
 <script>
 // ===== CONFIGURAÇÃO DA NUVEM =====
 // Aberto direto do computador (arquivo local), o site funciona offline e salva só neste navegador.
@@ -217,6 +299,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
   <button onclick="openAdd()" class="btn btn-y mb-2"><i data-lucide="plus" class="w-5 h-5"></i>Lançar</button>
   <button onclick="openSearch()" class="btn btn-soft !justify-start !font-medium !text-neutral-400 mb-5"><i data-lucide="search" class="w-4 h-4"></i>Buscar lançamento…</button>
   <nav class="space-y-0.5 flex-1" id="side-nav"></nav>
+  <div class="theme-sw mt-3" data-theme-sw="short"></div>
   <p id="cloud-status" class="text-[11px] text-neutral-500 px-2 pt-3"></p>
 </aside>
 <nav id="bnav"></nav>
@@ -267,6 +350,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
           <button onclick="moveMonth(1)" class="ibtn" title="Próximo mês"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
         </div>
         <button onclick="setMonth(openInvoice())" class="chip chip-y !text-sm !py-2.5 !px-4" title="Fatura que está recebendo suas compras agora"><i data-lucide="crosshair" class="w-4 h-4"></i>Fatura aberta</button>
+        <button onclick="toggleTheme()" class="ibtn !bg-[#141414] !border !border-[#242424] !p-2.5 md:hidden" title="Claro / escuro"><i data-lucide="sun-moon" class="w-5 h-5"></i></button>
         <button onclick="openSearch()" class="ibtn !bg-[#141414] !border !border-[#242424] !p-2.5 md:hidden" title="Buscar"><i data-lucide="search" class="w-5 h-5"></i></button>
       </div>
     </div>
@@ -426,6 +510,8 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
         <form id="share-form" onsubmit="cloudInvite(event)" class="flex gap-2 mb-4"><input class="inp" type="email" id="invite-email" required placeholder="E-mail Google da pessoa"><button class="btn btn-y !w-auto px-4 shrink-0"><i data-lucide="user-plus" class="w-4 h-4"></i></button></form>
         <p id="share-note" class="text-sm text-neutral-400"></p><div id="share-list" class="space-y-2"></div><div id="share-switch" class="mt-4" style="display:none"></div>
         <button id="cloud-out" style="display:none" onclick="cloudLogout()" class="btn btn-soft mt-4"><i data-lucide="log-out" class="w-4 h-4"></i>Sair da conta</button></div>
+      <div class="card"><h3 class="font-semibold text-lg mb-1">Aparência</h3><p class="text-sm text-neutral-400 mb-4">Escolha o modo de cores deste aparelho. "Automático" segue o modo do computador ou celular.</p>
+        <div class="theme-sw" data-theme-sw></div></div>
       <div class="card"><h3 class="font-semibold text-lg mb-1">Cópia de segurança</h3><p class="text-sm text-neutral-400 mb-4">Baixe um arquivo com todos os dados de tempos em tempos.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button onclick="exportData()" class="btn btn-soft"><i data-lucide="download" class="w-4 h-4"></i>Salvar backup</button>
@@ -457,6 +543,33 @@ function money(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', c
 function fdate(s) { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; }
 const $ = id => document.getElementById(id);
 // Ícones: se a biblioteca não carregar (sem internet ou bloqueada), o site continua funcionando sem eles
+/* ---------- Tema claro / escuro ---------- */
+function themePref() { try { return localStorage.getItem('FP_THEME') || 'dark'; } catch (e) { return 'dark'; } }
+const isLight = () => document.documentElement.classList.contains('light');
+function applyTheme(t) {
+  try { localStorage.setItem('FP_THEME', t); } catch (e) {}
+  const root = document.documentElement, light = t === 'light' || (t === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
+  const run = () => {
+    root.classList.toggle('light', light);
+    const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = light ? '#F5F4EF' : '#0A0A0A';
+    renderThemeSw(); if (typeof renderAll === 'function' && state) renderAll();
+  };
+  if (root.classList.contains('light') === light) return run();
+  // Sem transições individuais durante a troca; o navegador faz um fade da tela inteira (quando suportado)
+  root.classList.add('theme-switching');
+  const done = () => requestAnimationFrame(() => root.classList.remove('theme-switching'));
+  if (document.startViewTransition) { try { document.startViewTransition(run).finished.finally(done); return; } catch (e) {} }
+  run(); done();
+}
+function toggleTheme() { applyTheme(isLight() ? 'dark' : 'light'); }
+function renderThemeSw() {
+  const t = themePref();
+  document.querySelectorAll('[data-theme-sw]').forEach(el => { const sh = el.dataset.themeSw === 'short';
+    el.innerHTML = [['dark', 'moon', 'Escuro'], ['light', 'sun', 'Claro'], ['auto', 'monitor', sh ? 'Auto' : 'Automático']]
+    .map(([k, ic, l]) => `<button class="${t === k ? 'on' : ''}" onclick="applyTheme('${k}')" title="${l}"><i data-lucide="${ic}" class="w-4 h-4"></i>${l}</button>`).join(''); });
+  icons();
+}
+try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (themePref() === 'auto') applyTheme('auto'); }); } catch (e) {}
 function icons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) {} }
 const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
 const r2 = v => Math.round(v * 100) / 100;
@@ -1023,7 +1136,7 @@ function renderAll() {
   icons();
 }
 function chart(id, cfg) { if (!window.Chart) return; try { if (charts[id]) charts[id].destroy(); const c = $(id); if (!c || !c.offsetParent) return; charts[id] = new Chart(c.getContext('2d'), cfg); } catch (e) { console.warn('Gráfico não pôde ser desenhado', e); } }
-const axisOpt = { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#8a8a8a' } };
+const axisOpt = { grid: { color: 'rgba(128,128,128,.14)' }, ticks: { color: '#8a8a8a' } };
 
 /* ---------- Início ---------- */
 // O valor principal "conta" do valor anterior até o novo (efeito suave ao trocar de mês)
@@ -1242,7 +1355,7 @@ function renderProjection() {
   setTimeout(() => chart('projectionChart', { data: { labels, datasets: [
       { type: 'bar', label: 'Sobra do mês', data: rows.map(r => r.d.after), backgroundColor: ctx => { const ch = ctx.chart, a = ch.chartArea, v = ctx.raw; if (!a) return v >= 0 ? '#FFD60A' : '#f43f5e';
         const gr = ch.ctx.createLinearGradient(0, a.bottom, 0, a.top); if (v >= 0) { gr.addColorStop(0, '#FF9F1C'); gr.addColorStop(1, '#FFE45C'); } else { gr.addColorStop(0, '#fb7185'); gr.addColorStop(1, '#be123c'); } return gr; }, borderRadius: 10, maxBarThickness: 34 },
-      { type: 'line', label: 'Saldo em contas', data: rows.map(r => r.bal), borderColor: '#ffffff', backgroundColor: '#ffffff', pointBackgroundColor: '#FFD60A', pointBorderColor: '#0A0A0A', tension: .35, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 }] },
+      { type: 'line', label: 'Saldo em contas', data: rows.map(r => r.bal), borderColor: isLight() ? '#141414' : '#ffffff', backgroundColor: isLight() ? '#141414' : '#ffffff', pointBackgroundColor: '#FFD60A', pointBorderColor: isLight() ? '#fff' : '#0A0A0A', tension: .35, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 }] },
     options: { responsive: true, maintainAspectRatio: false, scales: { x: axisOpt, y: axisOpt }, plugins: { legend: { labels: { color: '#a3a3a3', usePointStyle: true } } } } }), 0);
 }
 
@@ -1536,7 +1649,7 @@ let lastDay = '';
 document.addEventListener('visibilitychange', () => { if (!document.hidden && lastDay && lastDay !== today()) { lastDay = today(); viewYM = openInvoice(); renderAll(); } });
 window.onload = () => {
   try { Object.assign(ui, JSON.parse(localStorage.getItem('FP_UI') || '{}')); } catch (e) {}
-  load(); viewYM = openInvoice(); lastDay = today(); buildNav(); ddScan(); go(TABS.some(t => t[0] === ui.tab) ? ui.tab : 'home');
+  load(); viewYM = openInvoice(); lastDay = today(); buildNav(); renderThemeSw(); ddScan(); go(TABS.some(t => t[0] === ui.tab) ? ui.tab : 'home');
 };
 
 </script>
