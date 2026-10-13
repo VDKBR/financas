@@ -289,10 +289,12 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
 <div id="ws-gate" class="fixed inset-0 z-50 bg-[#0A0A0A] items-center justify-center p-6" style="display:none">
   <div class="card max-w-sm w-full text-center space-y-5">
     <div class="mx-auto p-3 rounded-2xl tone w-fit"><i data-lucide="users" class="w-8 h-8"></i></div>
-    <div><h2 class="text-xl font-extrabold">Seu espaço de dados</h2><p class="text-sm text-neutral-400 mt-1">Você entrou como <b id="ws-who" class="text-neutral-200"></b> e ainda não tem dados aqui.</p></div>
-    <button class="btn btn-y" onclick="cloudCreateWs()">Criar meu espaço (começar do zero)</button>
+    <div><h2 class="text-xl font-extrabold">Seu espaço de dados</h2><p class="text-sm text-neutral-400 mt-1">Você entrou como <b id="ws-who" class="text-neutral-200"></b> e não há dados nessa conta.</p></div>
+    <p class="text-sm rounded-xl p-3 bg-amber-500/10 text-left">Já usa a plataforma em outro aparelho? Então <b>saia e entre com o mesmo e-mail Google</b> que usa lá. Só crie um espaço novo se for a primeira vez.</p>
+    <button class="btn btn-soft" onclick="cloudLogout()">Sair e entrar com outra conta</button>
     <button class="btn btn-soft" onclick="cloudRecheck()">Fui convidado: verificar convite</button>
-    <button class="text-xs text-neutral-500 underline" onclick="cloudLogout()">Sair</button>
+    <button class="text-sm text-neutral-400 underline" onclick="if(confirm('Criar um espaço novo e vazio para esta conta?'))cloudCreateWs()">Primeira vez: criar meu espaço (começar do zero)</button>
+
     <p id="ws-msg" class="text-xs text-rose-400"></p>
   </div>
 </div>
@@ -365,12 +367,13 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="lg:col-span-2 relative z-10"><p class="text-sm font-semibold text-black/60">Quanto deve sobrar neste mês</p><h3 id="kpi-net" class="text-4xl md:text-5xl font-extrabold mt-1 tracking-tight"></h3><p id="kpi-net-sub" class="text-sm text-black/60 mt-2"></p></div>
       <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 relative z-10" id="kpis"></div>
     </div>
+    <div id="space-bar" class="hidden"></div>
     <div id="install-bar" class="hidden card !p-4 flex items-center gap-3"><span class="p-2.5 rounded-xl tone"><i data-lucide="smartphone" class="w-5 h-5"></i></span>
       <div class="flex-1 min-w-0"><b class="block">Instale o app no celular</b><span class="text-xs text-neutral-400">Abre direto da tela inicial, em tela cheia.</span></div>
       <button class="btn btn-y !w-auto px-4 !py-2.5" onclick="installApp()">Instalar</button><button class="ibtn" onclick="hideInstallBar()" title="Agora não"><i data-lucide="x" class="w-4 h-4"></i></button></div>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <button class="quick" onclick="openEditor('card')"><span class="ic"><i data-lucide="credit-card" class="w-4 h-4"></i></span>Compra no cartão</button>
-      <label class="quick cursor-pointer"><span class="ic"><i data-lucide="file-up" class="w-4 h-4"></i></span>Importar fatura<input type="file" accept=".csv,.txt" class="hidden" onchange="openImport(event)"></label>
+      <label class="quick cursor-pointer"><span class="ic"><i data-lucide="file-up" class="w-4 h-4"></i></span>Importar fatura<input type="file" class="hidden" onchange="openImport(event)"></label>
       <button class="quick" onclick="go('plan','est')"><span class="ic"><i data-lucide="target" class="w-4 h-4"></i></span>Gastos previstos</button>
       <button class="quick" onclick="go('plan','proj')"><span class="ic"><i data-lucide="trending-up" class="w-4 h-4"></i></span>Próximos 12 meses</button>
     </div>
@@ -391,7 +394,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
       <div><h2 class="text-2xl md:text-3xl font-extrabold">Cartões</h2><p class="text-neutral-400 text-sm">Faturas, assinaturas que vêm todo mês e os seus cartões.</p></div>
       <div class="flex flex-wrap gap-2">
-        <label class="btn btn-y !w-auto px-4 cursor-pointer"><i data-lucide="file-up" class="w-4 h-4"></i>Importar fatura (.csv)<input type="file" accept=".csv,.txt" class="hidden" onchange="openImport(event)"></label>
+        <label class="btn btn-y !w-auto px-4 cursor-pointer"><i data-lucide="file-up" class="w-4 h-4"></i>Importar fatura (.csv)<input type="file" class="hidden" onchange="openImport(event)"></label>
         <button id="imp-undo" class="btn !w-auto px-4 btn-soft hidden" onclick="undoImport()"><i data-lucide="undo-2" class="w-4 h-4"></i><span id="imp-undo-lbl">Desfazer importação</span></button>
       </div>
     </div>
@@ -516,7 +519,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="card" style="--ac:#f472b6"><h3 class="font-semibold text-lg mb-1">Regras automáticas de categoria</h3><p class="text-sm text-neutral-400 mb-4">Quando um estabelecimento aparece na fatura, ele já recebe esta categoria. As regras são criadas quando você troca a categoria de um lançamento.</p>
         <input class="inp mb-3" id="rule-q" placeholder="Buscar estabelecimento" oninput="renderRules()">
         <div id="rule-list" class="space-y-2 max-h-[480px] overflow-y-auto pr-1"></div></div>
-      <div class="card" id="nav-share" style="display:none;--ac:#5eead4"><h3 class="font-semibold text-lg mb-1">Compartilhar dados</h3><p class="text-sm text-neutral-400 mb-4">Quem está na lista vê e edita os mesmos dados.</p>
+      <div class="card" id="nav-share" style="display:none;--ac:#5eead4"><h3 class="font-semibold text-lg mb-1">Conta e compartilhamento</h3><p class="text-sm text-neutral-400 mb-1">Conectado como <b id="acct-email" class="text-neutral-200"></b></p><p class="text-sm text-neutral-400 mb-4">Quem está na lista vê e edita os mesmos dados.</p>
         <form id="share-form" onsubmit="cloudInvite(event)" class="flex gap-2 mb-4"><input class="inp" type="email" id="invite-email" required placeholder="E-mail Google da pessoa"><button class="btn btn-y !w-auto px-4 shrink-0"><i data-lucide="user-plus" class="w-4 h-4"></i></button></form>
         <p id="share-note" class="text-sm text-neutral-400"></p><div id="share-list" class="space-y-2"></div><div id="share-switch" class="mt-4" style="display:none"></div>
         <button id="cloud-out" style="display:none" onclick="cloudLogout()" class="btn btn-soft mt-4"><i data-lucide="log-out" class="w-4 h-4"></i>Sair da conta</button></div>
@@ -527,7 +530,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="card"><h3 class="font-semibold text-lg mb-1">Cópia de segurança</h3><p class="text-sm text-neutral-400 mb-4">Baixe um arquivo com todos os dados de tempos em tempos.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button onclick="exportData()" class="btn btn-soft"><i data-lucide="download" class="w-4 h-4"></i>Salvar backup</button>
-          <label class="btn btn-soft cursor-pointer"><i data-lucide="upload" class="w-4 h-4"></i>Restaurar backup<input type="file" accept=".json" class="hidden" onchange="importData(event)"></label>
+          <label class="btn btn-soft cursor-pointer"><i data-lucide="upload" class="w-4 h-4"></i>Restaurar backup<input type="file" class="hidden" onchange="importData(event)"></label>
           <button onclick="loadSampleData()" class="btn btn-soft"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i>Dados de exemplo</button>
           <button onclick="resetData()" class="btn btn-soft !text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i>Apagar tudo</button></div></div>
     </div>
@@ -646,7 +649,7 @@ function importData(ev) {
   const f = ev.target.files[0]; if (!f) return;
   if (!confirm('Restaurar este backup substitui os dados atuais' + (window.CLOUD_ON ? ' (inclusive para os colaboradores)' : '') + '. Continuar?')) { ev.target.value = ''; return; }
   const r = new FileReader();
-  r.onload = () => { try { state = normalize(JSON.parse(r.result)); viewYM = openInvoice(); save(); toast('Backup restaurado!'); } catch (e) { toast('Arquivo de backup inválido.', true); } };
+  r.onload = () => { try { const d = JSON.parse(r.result); if (!d || typeof d !== 'object' || !['cardExpenses', 'incomes', 'fixedExpenses', 'accounts'].some(k => Array.isArray(d[k]))) throw 0; state = normalize(d); viewYM = openInvoice(); save(); toast('Backup restaurado!'); } catch (e) { toast('Este arquivo não é um backup da plataforma (escolha o .json baixado em "Salvar backup").', true); } };
   r.readAsText(f); ev.target.value = '';
 }
 function loadSampleData() {
@@ -1731,6 +1734,19 @@ if (cloud) {
 
   async function findSpaces() {
     spaces = (await getDocs(query(collection(db, 'workspaces'), where('members', 'array-contains', me())))).docs.map(d => ({ id: d.id, ...d.data() }));
+    // Conta quantos lançamentos cada espaço tem, para abrir o que tem dados e não um vazio criado por engano
+    await Promise.all(spaces.map(async s => { try { const ds = await getDocs(collection(db, 'workspaces', s.id, 'data')); let n = 0;
+      ds.forEach(d => { if (['cardExpenses', 'incomes', 'fixedExpenses', 'projectedExpenses', 'accounts'].includes(d.id)) { try { n += (JSON.parse(d.data().v) || []).length; } catch (e) {} } }); s.items = n; } catch (e) { s.items = 0; } }));
+  }
+  const spName = s => `${s.owner === me() ? 'Meu espaço' : 'Espaço de ' + s.owner}${s.created && s.created.toDate ? ' · criado em ' + s.created.toDate().toLocaleDateString('pt-BR') : ''} · ${s.items || 0} lançamento(s)`;
+  function renderSpaceBar() {
+    const b = el('space-bar'); if (!b) return;
+    if (spaces.length < 2 || !ws) { b.className = 'hidden'; return; }
+    const cur = spaces.find(s => s.id === wid) || {}, best = [...spaces].sort((a, x) => (x.items || 0) - (a.items || 0))[0];
+    b.className = 'card !p-4 text-sm';
+    b.innerHTML = `<b>Você tem ${spaces.length} espaços de dados nesta conta.</b> Está vendo: ${esc(spName(cur))}.` +
+      (best.id !== wid && (best.items || 0) > (cur.items || 0) ? ` <button class="chip chip-y ml-1" onclick="cloudSwitch('${best.id}')">Abrir o que tem mais dados (${best.items})</button>` : '') +
+      ` <button class="chip ml-1" onclick="go('settings')">Gerenciar</button>`;
   }
   async function enter() {
     setSt('Carregando…'); stop(); cloudReset();
@@ -1739,12 +1755,13 @@ if (cloud) {
     if (!spaces.length) { el('ws-who').textContent = user.email; el('ws-msg').textContent = ''; show('ws-gate', true); setSt(''); return; }
     show('ws-gate', false);
     let saved = null; try { saved = localStorage.getItem('FP_WS_' + me()); } catch (e) {}
-    openSpace((spaces.find(s => s.id === saved) || spaces.find(s => s.owner === me()) || spaces[0]).id);
+    const pick = spaces.find(s => s.id === saved && (s.items || 0) > 0) || [...spaces].sort((a, x) => (x.items || 0) - (a.items || 0))[0];
+    openSpace(pick.id);
   }
   function openSpace(id) {
     stop(); cloudReset(); wid = id; try { localStorage.setItem('FP_WS_' + me(), id); } catch (e) {}
     setSt('Sincronizando…');
-    unsubWs = onSnapshot(doc(db, 'workspaces', id), d => { if (d.exists() && id === wid) { ws = { id, ...d.data() }; const i = spaces.findIndex(x => x.id === id); if (i >= 0) spaces[i] = ws; renderShare(); } }, e => { if (e.code === 'permission-denied') enter(); });
+    unsubWs = onSnapshot(doc(db, 'workspaces', id), d => { if (d.exists() && id === wid) { const i = spaces.findIndex(x => x.id === id); ws = { ...(i >= 0 ? spaces[i] : {}), id, ...d.data() }; if (i >= 0) spaces[i] = ws; renderShare(); renderSpaceBar(); } }, e => { if (e.code === 'permission-denied') enter(); });
     unsub = onSnapshot(collection(db, 'workspaces', id, 'data'), snap => {
       if (id !== wid || snap.metadata.hasPendingWrites) return;
       const remote = {}; snap.forEach(d => { remote[d.id] = d.data().v; });
@@ -1761,7 +1778,7 @@ if (cloud) {
     catch (e) { el('ws-msg').textContent = 'Não foi possível criar o espaço: ' + (e.code || e.message); }
   };
   window.cloudRecheck = async () => { await enter(); if (!spaces.length) el('ws-msg').textContent = 'Nenhum convite encontrado para ' + user.email + '.'; };
-  window.cloudSwitch = id => openSpace(id);
+  window.cloudSwitch = id => { openSpace(id); say('Espaço trocado.'); };
   window.cloudInvite = async e => {
     e.preventDefault(); const em = el('invite-email').value.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(em)) return say('E-mail inválido.', true);
@@ -1778,7 +1795,9 @@ if (cloud) {
     el('share-form').style.display = owner ? '' : 'none'; el('share-note').textContent = owner ? '' : `Só o dono do espaço (${ws.owner}) pode convidar ou remover pessoas.`;
     el('share-list').innerHTML = ws.members.map(m => `<div class="row"><div class="flex-1 text-sm truncate">${esc(m)}</div>${m === ws.owner ? '<span class="chip">Dono</span>' : ''}${m === me() ? '<span class="chip">Você</span>' : ''}${owner && m !== ws.owner ? `<button class="ibtn" data-em="${esc(m)}" onclick="cloudRemove(this.dataset.em)" title="Remover"><i data-lucide="x" class="w-4 h-4"></i></button>` : ''}</div>`).join('');
     const sw = el('share-switch'); sw.style.display = spaces.length > 1 ? '' : 'none';
-    sw.innerHTML = '<label class="lbl">Espaço ativo (você participa de mais de um)</label><select class="inp" onchange="cloudSwitch(this.value)">' + spaces.map(x => `<option value="${x.id}" ${x.id === wid ? 'selected' : ''}>Espaço de ${esc(x.owner)}</option>`).join('') + '</select>';
+    sw.innerHTML = '<label class="lbl">Espaço ativo (esta conta tem mais de um)</label><select class="inp" onchange="cloudSwitch(this.value)">' + spaces.map(x => `<option value="${x.id}" ${x.id === wid ? 'selected' : ''}>${esc(spName(x))}</option>`).join('') + '</select>'
+      + '<p class="text-xs text-neutral-500 mt-2">Se um espaço aparece com 0 lançamentos, provavelmente foi criado por engano. Escolha o que tem os seus dados.</p>';
+    const ae = el('acct-email'); if (ae) ae.textContent = user.email;
     icons();
   }
 
