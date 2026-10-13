@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finanças Pro</title>
 <meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanças">
+<meta name="application-name" content="Finanças">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='26' fill='%23FFD60A'/%3E%3Ctext x='50' y='69' text-anchor='middle' font-family='Arial' font-weight='900' font-size='58' fill='%230A0A0A'%3EF%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -358,6 +365,9 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="lg:col-span-2 relative z-10"><p class="text-sm font-semibold text-black/60">Quanto deve sobrar neste mês</p><h3 id="kpi-net" class="text-4xl md:text-5xl font-extrabold mt-1 tracking-tight"></h3><p id="kpi-net-sub" class="text-sm text-black/60 mt-2"></p></div>
       <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 relative z-10" id="kpis"></div>
     </div>
+    <div id="install-bar" class="hidden card !p-4 flex items-center gap-3"><span class="p-2.5 rounded-xl tone"><i data-lucide="smartphone" class="w-5 h-5"></i></span>
+      <div class="flex-1 min-w-0"><b class="block">Instale o app no celular</b><span class="text-xs text-neutral-400">Abre direto da tela inicial, em tela cheia.</span></div>
+      <button class="btn btn-y !w-auto px-4 !py-2.5" onclick="installApp()">Instalar</button><button class="ibtn" onclick="hideInstallBar()" title="Agora não"><i data-lucide="x" class="w-4 h-4"></i></button></div>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <button class="quick" onclick="openEditor('card')"><span class="ic"><i data-lucide="credit-card" class="w-4 h-4"></i></span>Compra no cartão</button>
       <label class="quick cursor-pointer"><span class="ic"><i data-lucide="file-up" class="w-4 h-4"></i></span>Importar fatura<input type="file" accept=".csv,.txt" class="hidden" onchange="openImport(event)"></label>
@@ -510,6 +520,8 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
         <form id="share-form" onsubmit="cloudInvite(event)" class="flex gap-2 mb-4"><input class="inp" type="email" id="invite-email" required placeholder="E-mail Google da pessoa"><button class="btn btn-y !w-auto px-4 shrink-0"><i data-lucide="user-plus" class="w-4 h-4"></i></button></form>
         <p id="share-note" class="text-sm text-neutral-400"></p><div id="share-list" class="space-y-2"></div><div id="share-switch" class="mt-4" style="display:none"></div>
         <button id="cloud-out" style="display:none" onclick="cloudLogout()" class="btn btn-soft mt-4"><i data-lucide="log-out" class="w-4 h-4"></i>Sair da conta</button></div>
+      <div class="card" id="install-card"><h3 class="font-semibold text-lg mb-1">Instalar como aplicativo</h3><p class="text-sm text-neutral-400 mb-4" id="install-txt"></p>
+        <button id="install-btn" class="btn btn-y hidden" onclick="installApp()"><i data-lucide="smartphone" class="w-4 h-4"></i>Instalar o app</button></div>
       <div class="card"><h3 class="font-semibold text-lg mb-1">Aparência</h3><p class="text-sm text-neutral-400 mb-4">Escolha o modo de cores deste aparelho. "Automático" segue o modo do computador ou celular.</p>
         <div class="theme-sw" data-theme-sw></div></div>
       <div class="card"><h3 class="font-semibold text-lg mb-1">Cópia de segurança</h3><p class="text-sm text-neutral-400 mb-4">Baixe um arquivo com todos os dados de tempos em tempos.</p>
@@ -1644,12 +1656,46 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
+/* ================= INSTALAR COMO APLICATIVO ================= */
+let installEvt = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isHttp = () => /^https?:$/.test(location.protocol);
+if ('serviceWorker' in navigator && isHttp()) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderInstall(); });
+window.addEventListener('appinstalled', () => { installEvt = null; renderInstall(); toast('App instalado! Procure o ícone "Finanças" na tela inicial.'); });
+function renderInstall() {
+  const txt = $('install-txt'), btn = $('install-btn'), bar = $('install-bar'); if (!txt) return;
+  const ua = navigator.userAgent, ios = /iphone|ipad|ipod/i.test(ua), samsung = /SamsungBrowser/i.test(ua);
+  let dismissed = false; try { dismissed = localStorage.getItem('FP_INSTALL_HIDE') === '1'; } catch (e) {}
+  btn.classList.toggle('hidden', !installEvt);
+  bar.classList.toggle('hidden', !installEvt || dismissed || isStandalone() || innerWidth > 1024);
+  txt.innerHTML = isStandalone() ? 'Você já está usando o app instalado. ✅'
+    : !isHttp() ? 'Para instalar, abra o site pelo endereço na internet (https). Aberto direto do computador como arquivo, a instalação não fica disponível.'
+    : installEvt ? 'Coloque o Finanças na tela inicial do celular ou no computador, como um aplicativo.'
+    : ios ? 'No iPhone: toque em <b>Compartilhar</b> (quadrado com seta) e depois em <b>Adicionar à Tela de Início</b>.'
+    : samsung ? 'No Samsung Internet: toque no ícone de <b>download/instalar</b> na barra de endereço, ou em <b>Menu ☰ → Adicionar página a → Tela inicial</b>.'
+    : 'No Chrome: toque nos <b>três pontinhos ⋮</b> e depois em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).';
+  icons();
+}
+async function installApp() {
+  if (!installEvt) { go('settings'); return; }
+  installEvt.prompt(); const r = await installEvt.userChoice.catch(() => null); installEvt = null; renderInstall();
+  if (r && r.outcome !== 'accepted') toast('Tudo bem! Você pode instalar depois em Ajustes.');
+}
+function hideInstallBar() { try { localStorage.setItem('FP_INSTALL_HIDE', '1'); } catch (e) {} renderInstall(); }
+// Atalhos do ícone do app (segurar o ícone na tela inicial)
+function runShortcut() {
+  const a = new URLSearchParams(location.search).get('acao'); if (!a) return;
+  history.replaceState(null, '', location.pathname);
+  if (a === 'lancar') setTimeout(openAdd, 300); else if (a === 'fatura') go('cards', 'inv');
+}
+
 /* ================= INÍCIO ================= */
 let lastDay = '';
 document.addEventListener('visibilitychange', () => { if (!document.hidden && lastDay && lastDay !== today()) { lastDay = today(); viewYM = openInvoice(); renderAll(); } });
 window.onload = () => {
   try { Object.assign(ui, JSON.parse(localStorage.getItem('FP_UI') || '{}')); } catch (e) {}
-  load(); viewYM = openInvoice(); lastDay = today(); buildNav(); renderThemeSw(); ddScan(); go(TABS.some(t => t[0] === ui.tab) ? ui.tab : 'home');
+  load(); viewYM = openInvoice(); lastDay = today(); buildNav(); renderThemeSw(); ddScan(); go(TABS.some(t => t[0] === ui.tab) ? ui.tab : 'home'); renderInstall(); runShortcut();
 };
 
 </script>

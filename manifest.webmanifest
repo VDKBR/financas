@@ -1,0 +1,22 @@
+{
+  "name": "Finanças",
+  "short_name": "Finanças",
+  "description": "Seu dinheiro organizado: faturas, gastos previstos e projeção.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Lançar", "url": "./index.html?acao=lancar", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Fatura do cartão", "url": "./index.html?acao=fatura", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}
