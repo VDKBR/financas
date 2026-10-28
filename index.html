@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finanças Pro</title>
 <meta name="theme-color" content="#0A0A0A">
+<!-- Avisa ao navegador do celular que o site já tem modo claro e escuro próprios,
+     para ele não aplicar o "escurecimento automático" (que deixava o amarelo marrom) -->
+<meta name="color-scheme" content="dark light">
+<meta name="supported-color-schemes" content="dark light">
+<meta name="darkreader-lock">
+<style>
+  :root { color-scheme: dark; }
+  :root.light { color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --sys-dark: 1; } }
+  @media (prefers-color-scheme: light) { :root { --sys-dark: 0; } }
+</style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -264,7 +275,8 @@
 // Tema salvo neste aparelho: 'dark', 'light' ou 'auto' (segue o sistema)
 (function () { var t = 'dark'; try { t = localStorage.getItem('FP_THEME') || 'dark'; } catch (e) {}
   var light = t === 'light' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
-  document.documentElement.classList.toggle('light', light); })();
+  document.documentElement.classList.toggle('light', light);
+  if (light) document.querySelectorAll('meta[name=color-scheme],meta[name=supported-color-schemes]').forEach(function (x) { x.content = 'light dark'; }); })();
 </script>
 <script>
 // ===== CONFIGURAÇÃO DA NUVEM =====
@@ -367,6 +379,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="lg:col-span-2 relative z-10"><p class="text-sm font-semibold text-black/60">Quanto deve sobrar neste mês</p><h3 id="kpi-net" class="text-4xl md:text-5xl font-extrabold mt-1 tracking-tight"></h3><p id="kpi-net-sub" class="text-sm text-black/60 mt-2"></p></div>
       <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 relative z-10" id="kpis"></div>
     </div>
+    <div id="pay-bar" class="hidden"></div>
     <div id="space-bar" class="hidden"></div>
     <div id="install-bar" class="hidden card !p-4 flex items-center gap-3"><span class="p-2.5 rounded-xl tone"><i data-lucide="smartphone" class="w-5 h-5"></i></span>
       <div class="flex-1 min-w-0"><b class="block">Instale o app no celular</b><span class="text-xs text-neutral-400">Abre direto da tela inicial, em tela cheia.</span></div>
@@ -478,16 +491,17 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div id="acc-list" class="space-y-2.5"></div>
       <p class="text-xs text-neutral-500 mt-5">Corrija o saldo direto no campo de valor. Para somar a sobra de um mês, use "Fechar o mês" no Início.</p>
     </div>
+    <div data-pane="money:acc" class="card" data-extra><h3 class="font-semibold text-lg mb-1">Movimentações</h3><p class="text-sm text-neutral-400 mb-3">Pagamentos de fatura feitos com o dinheiro guardado e sobras de meses fechados.</p><div id="acc-moves"></div></div>
     <div data-pane="money:inv" class="hidden">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div class="card space-y-4" style="--ac:#a78bfa">
-          <div><label class="lbl">Aporte inicial / único (R$)</label><input class="inp" type="number" step="0.01" min="0" id="inv-init" oninput="invCalc()" placeholder="0,00"></div>
-          <div><label class="lbl">Aporte mensal (R$)</label><input class="inp" type="number" step="0.01" min="0" id="inv-month" oninput="invCalc()" placeholder="0,00"></div>
+          <div><label class="lbl">Aporte inicial / único (R$)</label><input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="inv-init" oninput="invCalc()" placeholder="0,00"></div>
+          <div><label class="lbl">Aporte mensal (R$)</label><input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="inv-month" oninput="invCalc()" placeholder="0,00"></div>
           <div><label class="lbl">Projetar até</label><input class="inp" type="month" id="inv-end" onchange="invCalc()">
             <div class="flex flex-wrap gap-2 mt-2"><button class="chip hover:bg-white/10" onclick="invQuick(1)">1 ano</button><button class="chip hover:bg-white/10" onclick="invQuick(5)">5 anos</button><button class="chip hover:bg-white/10" onclick="invQuick(10)">10 anos</button><button class="chip hover:bg-white/10" onclick="invQuick(20)">20 anos</button></div></div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="lbl">CDI (% ao ano)</label><input class="inp" type="number" step="0.01" id="inv-cdi" oninput="invCalc()"></div>
-            <div><label class="lbl">CDB paga (% do CDI)</label><input class="inp" type="number" step="0.1" id="inv-pct" oninput="invCalc()"></div></div>
+            <div><label class="lbl">CDI (% ao ano)</label><input class="inp" type="text" inputmode="decimal" autocomplete="off" id="inv-cdi" oninput="invCalc()"></div>
+            <div><label class="lbl">CDB paga (% do CDI)</label><input class="inp" type="text" inputmode="decimal" autocomplete="off" id="inv-pct" oninput="invCalc()"></div></div>
           <p class="text-xs text-neutral-500">O imposto incide só sobre o rendimento e cada aporte é tributado pelo seu próprio tempo: <b>IR</b> 22,5% até 180 dias, 20% até 360, 17,5% até 720 e 15% acima; <b>IOF</b> só nos primeiros 30 dias. Valores estimados com taxa constante.</p>
         </div>
         <div class="lg:col-span-2 space-y-5 min-w-0">
@@ -500,7 +514,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
           <div class="card"><h3 class="font-semibold mb-4">Tributação no fim do período</h3>
             <div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Tempo aplicado</th><th>Aportes</th><th>Aportado</th><th>Rendimento bruto</th><th>IOF</th><th>IR</th><th>Rendimento líquido</th></tr></thead><tbody id="inv-tax"></tbody></table></div></div>
           <div class="card"><h3 class="font-semibold mb-1">Resgate antecipado</h3><p class="text-xs text-neutral-400 mb-4">IOF e IR se você resgatar após poucos dias.</p>
-            <div class="grid grid-cols-2 gap-3 max-w-md mb-3"><div><label class="lbl">Valor aplicado (R$)</label><input class="inp" type="number" min="0" step="0.01" id="inv-r-val" value="10000" oninput="renderRedeem()"></div>
+            <div class="grid grid-cols-2 gap-3 max-w-md mb-3"><div><label class="lbl">Valor aplicado (R$)</label><input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="inv-r-val" value="10.000,00" oninput="renderRedeem()"></div>
               <div><label class="lbl">Dias aplicado</label><input class="inp" type="number" min="1" id="inv-r-days" value="20" oninput="renderRedeem()"></div></div>
             <p id="inv-r-out" class="text-sm text-neutral-300 leading-relaxed"></p></div>
           <div class="card"><h3 class="font-semibold mb-4">Ano a ano</h3><div class="overflow-x-auto rounded-xl"><table class="w-full"><thead><tr><th>Mês</th><th>Aportado</th><th>Rendimento líquido</th><th>Valor líquido</th></tr></thead><tbody id="inv-body"></tbody></table></div></div>
@@ -545,7 +559,7 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','A
 let state = blank(), viewYM = null, charts = {}, cardView = null;
 const ui = { tab: 'home', cards: 'inv', plan: 'proj', money: 'acc' };
 
-function blank() { return { incomes: [], fixedExpenses: [], cardExpenses: [], projectedExpenses: [], categories: [...DEF_CATS], accounts: [], closedMonths: {}, cards: [], cardCfg: { closing: 3, due: 10, months: {} }, invest: { cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, invoiceV2: true, cardSubs: [], catRules: {}, goals: [] }; }
+function blank() { return { incomes: [], fixedExpenses: [], cardExpenses: [], projectedExpenses: [], categories: [...DEF_CATS], accounts: [], closedMonths: {}, cards: [], cardCfg: { closing: 3, due: 10, months: {} }, invest: { cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, invoiceV2: true, cardSubs: [], catRules: {}, goals: [], invoicePays: [] }; }
 function pad(n) { return String(n).padStart(2, '0'); }
 function today() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function curYM() { return today().slice(0, 7); }
@@ -566,7 +580,7 @@ function applyTheme(t) {
   const root = document.documentElement, light = t === 'light' || (t === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
   const run = () => {
     root.classList.toggle('light', light);
-    const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = light ? '#F5F4EF' : '#0A0A0A';
+    const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = light ? '#F5F4EF' : '#0A0A0A'; document.querySelectorAll('meta[name=color-scheme],meta[name=supported-color-schemes]').forEach(x => x.content = light ? 'light dark' : 'dark light');
     renderThemeSw(); if (typeof renderAll === 'function' && state) renderAll();
   };
   if (root.classList.contains('light') === light) return run();
@@ -588,7 +602,21 @@ try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () 
 function icons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) {} }
 const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
 const r2 = v => Math.round(v * 100) / 100;
-const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+// Lê valores no padrão brasileiro: "15.954" = 15954 · "15.954,90" = 15954,90 · "1500,5" = 1500,50 · "15.95" = 15,95
+function num(v) {
+  if (typeof v === 'number') return isNaN(v) ? 0 : v;
+  let s = String(v ?? '').replace(/[R$\s ]/g, ''); const neg = /^-|-$/.test(s); s = s.replace(/-/g, '');
+  if (!s) return 0;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');          // só pontos de milhar
+  else if ((s.match(/\./g) || []).length > 1) s = s.replace(/\./g, '');       // vários pontos = milhar
+  const n = parseFloat(s); return isNaN(n) ? 0 : (neg ? -n : n);
+}
+// Valor para mostrar dentro de um campo: 15954.9 -> "15.954,90"
+const brIn = v => (v === '' || v == null) ? '' : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(+v || 0);
+// Campos de dinheiro: ao sair do campo, o valor é reescrito já formatado
+document.addEventListener('focusout', e => { const t = e.target; if (t.classList && t.classList.contains('money') && t.value.trim() !== '') t.value = brIn(num(t.value)); });
+document.addEventListener('focusin', e => { const t = e.target; if (t.classList && t.classList.contains('money')) setTimeout(() => { try { t.select(); } catch (x) {} }, 0); });
 // Nome "chave" de um estabelecimento: sem acentos, espaços e símbolos (KOMPRAO = Komprão)
 const keyN = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 const normT = t => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -612,7 +640,7 @@ function openInvoice(name) { return invoiceMonth(today(), name); }
 function normalize(s) {
   const b = blank(), wasMigrated = !!(s && s.invoiceV2);
   s = Object.assign(b, s || {});
-  ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'accounts', 'cards', 'cardSubs', 'goals'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'accounts', 'cards', 'cardSubs', 'goals', 'invoicePays'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
   if (!s.categories || !s.categories.length) s.categories = [...DEF_CATS];
   if (!s.catRules || typeof s.catRules !== 'object' || Array.isArray(s.catRules)) s.catRules = {};
   s.cardCfg = Object.assign({ closing: 3, due: 10 }, s.cardCfg || {}); if (!s.cardCfg.months) s.cardCfg.months = {};
@@ -728,12 +756,15 @@ function monthData(ym) {
 
 /* ================= CONTAS, SALDO E FECHAMENTO DO MÊS ================= */
 function totalBalance() { return r2(sum(state.accounts, a => a.balance)); }
+// Projeção do saldo guardado:
+// - mês atual: parte do saldo de hoje e desconta a fatura deste mês que ainda vai ser paga (até o vencimento)
+// - meses seguintes: soma a sobra do mês; o que da fatura já foi pago pelas contas não é descontado de novo
 function projectRows(n) {
-  const base = curYM(); let bal = totalBalance(); const rows = [];
+  const base = curYM(); let bal = totalBalance() - dueNow(); const rows = [];
   for (let i = 0; i < n; i++) {
-    const ym = ymAdd(base, i), d = monthData(ym), closed = state.closedMonths[ym] || null;
-    if (i > 0 && !closed) bal += d.after;
-    rows.push({ ym, d, closed, bal: r2(bal) });
+    const ym = ymAdd(base, i), d = monthData(ym), closed = state.closedMonths[ym] || null, paid = i > 0 ? paidCapped(ym) : 0;
+    if (i > 0 && !closed) bal += d.after + paid;
+    rows.push({ ym, d, closed, paid, bal: r2(bal) });
   }
   return rows;
 }
@@ -745,8 +776,8 @@ function delAccount(id) {
 }
 function toggleNewAcc() { const n = $('close-newname'); if (n) n.classList.toggle('hidden', $('close-acc').value !== '__new__'); }
 function confirmClose() {
-  const ym = viewYM, amount = r2(parseFloat($('close-amount').value));
-  if (isNaN(amount)) return toast('Informe o valor que sobrou.', true);
+  const ym = viewYM, amount = r2(num($('close-amount').value));
+  if (!$('close-amount').value.trim()) return toast('Informe o valor que sobrou.', true);
   let acc, sel = $('close-acc').value;
   if (sel === '__new__') {
     const name = $('close-newname').value.trim(); if (!name) return toast('Digite o nome da nova conta.', true);
@@ -938,7 +969,7 @@ function delItem(type, id) {
 let ed = null;
 const fld = (label, html, cls = '') => `<div class="${cls}"><label class="lbl">${label}</label>${html}</div>`;
 const inp = (id, v = '', attrs = '') => `<input class="inp" id="${id}" value="${esc(v)}" ${attrs}>`;
-const mny = (id, v = '') => `<input class="inp" type="number" step="0.01" min="0" inputmode="decimal" id="${id}" value="${v === '' ? '' : v}" placeholder="0,00">`;
+const mny = (id, v = '') => `<input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="${id}" value="${brIn(v)}" placeholder="0,00">`;
 const g = id => { const e = $(id); return e ? (e.type === 'checkbox' ? e.checked : e.value) : ''; };
 const cardSel = (id, v) => `<select class="inp" id="${id}">${state.cards.map(c => `<option ${c.name === v ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>`;
 const catSel = (id, v, extra = '') => `<select class="inp" id="${id}" ${extra}>${catOpts(v)}</select>`;
@@ -1031,7 +1062,7 @@ function openEditor(type, id) {
   } else if (type === 'account') {
     title = isNew ? 'Nova conta' : 'Editar conta';
     h = fld('Banco ou conta', inp('e-title', it ? it.name : '', 'list="bank-list" maxlength="30" placeholder="Ex: Nubank, Dinheiro"') + `<datalist id="bank-list">${['XP', 'Nubank', 'Mercado Pago', 'Inter', 'C6 Bank', 'Itaú', 'Bradesco', 'Santander', 'Caixa', 'Banco do Brasil', 'PicPay', 'Dinheiro'].map(b => `<option value="${b}">`).join('')}</datalist>`)
-      + fld('Saldo atual (R$)', `<input class="inp" type="number" step="0.01" id="e-amount" value="${it ? it.balance : ''}" placeholder="0,00">`);
+      + fld('Saldo atual (R$)', `<input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="e-amount" value="${it ? brIn(it.balance) : ''}" placeholder="0,00">`);
   }
   const color = { card: 'btn-y', income: 'btn-y', fixed: 'btn-y', est: 'btn-y', sub: 'btn-y', goal: 'btn-y', account: 'btn-y' }[type];
   showModal(head(title, sub) + `<form onsubmit="saveEditor(event)" class="space-y-4">${h}
@@ -1078,7 +1109,7 @@ function edAuto() {
 }
 function edApplyAuto() {
   const cat = g('e-cat'), inst = !g('e-avista'), r = autoProjCalc(cat, inst); if (!r.ready) return;
-  $('e-amount').value = r.avg.toFixed(2); if (!g('e-title').trim()) $('e-title').value = cat;
+  $('e-amount').value = brIn(r.avg); if (!g('e-title').trim()) $('e-title').value = cat;
   ed.auto = { cat, avg: r.avg, from: r.from, to: r.to, at: today(), inst };
   toast(`Média aplicada: ${money(r.avg)}.`);
 }
@@ -1141,7 +1172,7 @@ function itemRow({ type, id, icon, tone, title, sub, value, extra = '', dim = fa
   return `<div class="row ${dim ? 'opacity-50' : ''}">
     <div class="p-2 rounded-xl ${tone} shrink-0 hidden sm:block"><i data-lucide="${icon}" class="w-4 h-4"></i></div>
     <div class="flex-1 min-w-0 cursor-pointer" onclick="openEditor('${type}','${id}')"><div class="font-semibold truncate">${esc(title)}</div><div class="text-xs text-neutral-400 truncate">${sub}</div></div>
-    ${noInput ? `<b class="whitespace-nowrap">${money(value)}</b>` : `<span class="text-xs text-neutral-500 hidden sm:inline">R$</span><input type="number" step="0.01" inputmode="decimal" value="${(+value || 0).toFixed(2)}" onchange="setAmt('${type}','${id}',this.value)" class="inp inp-sm money-in" title="Altere o valor e ele é salvo na hora">`}
+    ${noInput ? `<b class="whitespace-nowrap">${money(value)}</b>` : `<span class="text-xs text-neutral-500 hidden sm:inline">R$</span><input type="text" inputmode="decimal" autocomplete="off" value="${brIn(value)}" onchange="setAmt('${type}','${id}',this.value)" class="inp inp-sm money money-in" title="Altere o valor e ele é salvo na hora">`}
     ${extra}${editBtn(type, id)}${delBtn(type, id)}</div>`;
 }
 
@@ -1175,7 +1206,7 @@ function renderDashboard() {
   $('kpis').innerHTML = k('Receita', d.income, 'arrow-down-circle', 'plan', 'inc', '+ ') + k('Fixos', d.fixed, 'home', 'plan', 'fix', '− ') + k('Fatura', d.card, 'credit-card', 'cards', 'inv', '− ') + k('Previsto', d.estRem, 'target', 'plan', 'est', '− ');
   const al = $('dash-alert'), msg = d.after < 0 ? 'Atenção: as despesas deste mês passam dos recebimentos.' : d.over > 0 ? `Você passou ${money(d.over)} do previsto em ${d.cats.filter(x => x.over > 0).map(x => x.cat).join(', ')}.` : '';
   al.className = msg ? 'p-4 rounded-2xl text-sm bg-rose-500/10 text-rose-300 flex items-center gap-2' : 'hidden'; al.innerHTML = msg ? `<i data-lucide="alert-triangle" class="w-5 h-5 shrink-0"></i>${msg}` : '';
-  renderInvoiceBox(d); renderEstBox(d); renderBalanceBox(d); renderGoalsBox();
+  renderInvoiceBox(d); renderEstBox(d); renderBalanceBox(d); renderGoalsBox(); renderPayBar();
 }
 function renderInvoiceBox(d) {
   const open = openInvoice(), items = [...d.cardItems].sort((a, b) => (b.virtual - a.virtual) || (b.date || '').localeCompare(a.date || '') || a.title.localeCompare(b.title));
@@ -1191,7 +1222,8 @@ function renderInvoiceBox(d) {
     <div class="text-right"><p class="text-xs text-neutral-400">Total até agora</p><b class="text-2xl text-white">${money(d.card)}</b></div></div>
     <div class="flex flex-wrap gap-2 mb-3"><span class="chip">À vista ${money(d.avista)}</span><span class="chip">Parcelas ${money(d.parcelado)}</span>${chips}
       ${viewYM !== open ? `<button class="chip" onclick="setMonth('${open}')">Ver fatura aberta (${ymShort(open)})</button>` : ''}</div>
-    <div class="max-h-80 overflow-y-auto pr-1">${rows || '<p class="text-sm text-neutral-500 text-center py-8">Nenhum lançamento nesta fatura.</p>'}</div>
+    ${payBlock(viewYM)}
+    <div class="max-h-80 overflow-y-auto pr-1 mt-3">${rows || '<p class="text-sm text-neutral-500 text-center py-8">Nenhum lançamento nesta fatura.</p>'}</div>
     <button class="chip mt-3 hover:bg-white/10" onclick="cf.mode='month';cardView='${viewYM}';go('cards','inv')">Ver fatura completa →</button>`;
 }
 function renderEstBox(d) {
@@ -1216,10 +1248,10 @@ function renderBalanceBox(d) {
       <button class="chip mt-4 hover:bg-white/10" onclick="undoClose('${viewYM}')">Desfazer fechamento</button>`;
   else if (viewYM > base) box.innerHTML = `<h3 class="font-semibold flex items-center gap-2"><i data-lucide="calendar-clock" class="w-5 h-5 text-white"></i>Fechar o mês</h3><p class="text-sm text-neutral-400 mt-3">Quando ${title} chegar, você poderá somar a sobra numa conta.</p>`;
   else {
-    const amt = r2(d.after), opts = state.accounts.map(a => `<option value="${a.id}">Somar em ${esc(a.name)} (${money(a.balance)})</option>`).join('') + '<option value="__new__">Criar nova conta…</option>';
+    const paidAcc = paidCapped(viewYM), amt = r2(d.after + paidAcc), opts = state.accounts.map(a => `<option value="${a.id}">Somar em ${esc(a.name)} (${money(a.balance)})</option>`).join('') + '<option value="__new__">Criar nova conta…</option>';
     box.innerHTML = `<h3 class="font-semibold flex items-center gap-2"><i data-lucide="piggy-bank" class="w-5 h-5 text-white"></i>Fechar o mês</h3>
-      <p class="text-sm text-neutral-300 mt-3">${amt >= 0 ? 'Sobraram' : 'Faltaram'} <b class="${amt >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(Math.abs(amt))}</b> em ${title}. Está certo?</p>
-      <div class="grid grid-cols-1 gap-3 mt-4"><div><label class="lbl">Valor a guardar (ajuste se precisar)</label><input class="inp" type="number" step="0.01" id="close-amount" value="${amt}"></div>
+      <p class="text-sm text-neutral-300 mt-3">${amt >= 0 ? 'Sobraram' : 'Faltaram'} <b class="${amt >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(Math.abs(amt))}</b> em ${title}. Está certo?</p>${paidAcc ? `<p class="text-xs text-neutral-500 mt-1">A fatura (${money(paidAcc)}) já saiu das contas no pagamento, por isso não foi descontada aqui.</p>` : ''}
+      <div class="grid grid-cols-1 gap-3 mt-4"><div><label class="lbl">Valor a guardar (ajuste se precisar)</label><input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="close-amount" value="${brIn(amt)}"></div>
         <select class="inp" id="close-acc" onchange="toggleNewAcc()">${opts}</select></div>
       <input class="inp mt-3 hidden" id="close-newname" maxlength="30" placeholder="Nome da nova conta">
       <button class="btn btn-y mt-4" onclick="confirmClose()"><i data-lucide="check" class="w-4 h-4"></i>Confirmar e somar ao saldo</button>`;
@@ -1307,6 +1339,7 @@ function renderCardMonth() {
   const filt = [cf.card, cf.who, cf.cat, cf.q && `"${cf.q}"`].filter(Boolean).join(' · ');
   let h = `<div class="row flex-wrap justify-between mb-3"><div><div class="text-xs text-neutral-400">${label}${filt ? ' · ' + esc(filt) : ''}</div><b class="text-2xl text-white">${money(total)}</b></div>
     <div class="flex gap-2 flex-wrap"><span class="chip">À vista ${money(total - parc)}</span><span class="chip">Parcelas ${money(parc)}</span></div></div>`;
+  if (cf.mode === 'month' && !cf.cat && !cf.who && !cf.q) h += `<div class="mb-4 -mt-1">${payBlock(cardView, cf.card || null)}</div>`;
   if (cf.mode === 'month') { const next = [1, 2, 3, 4].map(i => ymAdd(cardView, i)).filter(m => tm(m)).map(m => `<button class="chip hover:bg-white/10" onclick="cardView='${m}';renderCardMonth();icons()">${ymShort(m)}: ${money(tm(m))}</button>`).join('');
     if (next) h += `<div class="flex flex-wrap items-center gap-2 mb-5 text-xs text-neutral-400">Próximas faturas: ${next}</div>`; }
   const keyOf = { cat: c => c.category, card: c => c.tag, who: c => whoName(c.who) || 'Sem pessoa', month: c => c.month, none: () => 'Lançamentos' }[cf.group], by = {};
@@ -1350,7 +1383,7 @@ function renderPlan() {
     return `<div class="row !flex-col !items-stretch !gap-3"><div class="flex items-start gap-3"><div class="flex-1 min-w-0 cursor-pointer" onclick="openEditor('goal','${gl.id}')"><div class="font-semibold text-lg truncate">${esc(gl.title)}</div>
         <div class="text-xs text-neutral-400">${gl.deadline ? 'Até ' + ymLong(gl.deadline) : 'Sem prazo'}${gl.category ? ' · ' + esc(gl.category) : ''}</div></div>${editBtn('goal', gl.id)}${delBtn('goal', gl.id)}</div>
       <div class="bar !h-3"><div class="bg-y" style="width:${x.pct}%"></div></div>
-      <div class="flex flex-wrap items-center gap-2 text-sm"><span class="text-neutral-400">Guardado</span><input type="number" step="0.01" value="${(+gl.saved || 0).toFixed(2)}" onchange="setAmt('goal','${gl.id}',this.value)" class="inp inp-sm money-in"><span class="text-neutral-400">de ${money(gl.target)} (${x.pct}%)</span>
+      <div class="flex flex-wrap items-center gap-2 text-sm"><span class="text-neutral-400">Guardado</span><input type="text" inputmode="decimal" autocomplete="off" value="${brIn(gl.saved || 0)}" onchange="setAmt('goal','${gl.id}',this.value)" class="inp inp-sm money money-in"><span class="text-neutral-400">de ${money(gl.target)} (${x.pct}%)</span>
         <button class="chip chip-y ml-auto" onclick="addToGoal('${gl.id}')"><i data-lucide="plus" class="w-3 h-3"></i>Guardar</button></div>
       <p class="text-xs text-neutral-400">${x.left <= 0 ? 'Objetivo alcançado! 🎉' : `Faltam ${money(x.left)}${x.months ? ` · guardar ${money(x.perMonth)} por mês até o prazo` : ''}`}${x.planned ? ` · gastos previstos ligados: ${money(x.planned)}` : ''}</p></div>`; }).join('')
     : `<div class="lg:col-span-2">${emptyBox('Nenhum objetivo ainda. Crie um para acompanhar quanto falta.', `<button class="chip hover:bg-white/10" onclick="openEditor('goal')">+ Criar objetivo</button>`)}</div>`;
@@ -1359,16 +1392,17 @@ function renderProjection() {
   const rows = projectRows(13).slice(1), start = totalBalance(), end = rows[11].bal, labels = rows.map(r => ymShort(r.ym));
   $('proj-body').innerHTML = rows.map(r => { const d = r.d;
     return `<tr class="cursor-pointer hover:bg-white/[.03]" onclick="setMonth('${r.ym}')"><td class="font-medium whitespace-nowrap">${ymShort(r.ym)}</td><td class="text-emerald-400">${money(d.income)}</td><td class="text-white">${money(d.fixed)}</td>
-      <td class="text-white">${money(d.card)}</td><td class="t-y">${money(d.estRem)}</td>
+      <td class="text-white">${money(d.card)}${r.paid ? `<div class="text-[11px] text-emerald-400">${money(r.paid)} já pago</div>` : ''}</td><td class="t-y">${money(d.estRem)}</td>
       <td class="font-semibold ${d.after >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(d.after)}${r.closed ? '<div class="text-[11px] font-normal text-neutral-500">já somado às contas</div>' : ''}</td>
       <td class="font-bold ${r.bal >= 0 ? 'text-white' : 'text-rose-400'}">${money(r.bal)}</td></tr>`; }).join('');
   const t = $('proj-total'); t.textContent = money(end); t.className = `text-3xl font-extrabold mt-1 ${end >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
   const diff = r2(end - start), b = $('proj-badge');
   b.className = `chip !text-sm !px-4 !py-2 ${diff >= 0 ? 'chip-y' : '!bg-rose-500/10 !text-rose-300'}`;
   b.innerHTML = `<i data-lucide="${diff >= 0 ? 'trending-up' : 'alert-triangle'}" class="w-4 h-4"></i>${diff >= 0 ? 'Patrimônio crescendo' : 'Alerta de déficit'}`;
-  $('proj-text').textContent = diff >= 0 ? `Você tem ${money(start)} hoje e deve juntar mais ${money(diff)} nos próximos 12 meses.` : `Você tem ${money(start)} hoje, mas a previsão é cair ${money(Math.abs(diff))} em 12 meses.`;
+  const dn = dueNow();
+  $('proj-text').textContent = (diff >= 0 ? `Você tem ${money(start)} hoje e deve juntar mais ${money(diff)} nos próximos 12 meses.` : `Você tem ${money(start)} hoje, mas a previsão é cair ${money(Math.abs(diff))} em 12 meses.`) + (dn ? ` Já considera a fatura de ${money(dn)} que ainda vai sair das contas este mês.` : '');
   setTimeout(() => chart('projectionChart', { data: { labels, datasets: [
-      { type: 'bar', label: 'Sobra do mês', data: rows.map(r => r.d.after), backgroundColor: ctx => { const ch = ctx.chart, a = ch.chartArea, v = ctx.raw; if (!a) return v >= 0 ? '#FFD60A' : '#f43f5e';
+      { type: 'bar', label: 'Sobra do mês', data: rows.map(r => r2(r.d.after + r.paid)), backgroundColor: ctx => { const ch = ctx.chart, a = ch.chartArea, v = ctx.raw; if (!a) return v >= 0 ? '#FFD60A' : '#f43f5e';
         const gr = ch.ctx.createLinearGradient(0, a.bottom, 0, a.top); if (v >= 0) { gr.addColorStop(0, '#FF9F1C'); gr.addColorStop(1, '#FFE45C'); } else { gr.addColorStop(0, '#fb7185'); gr.addColorStop(1, '#be123c'); } return gr; }, borderRadius: 10, maxBarThickness: 34 },
       { type: 'line', label: 'Saldo em contas', data: rows.map(r => r.bal), borderColor: isLight() ? '#141414' : '#ffffff', backgroundColor: isLight() ? '#141414' : '#ffffff', pointBackgroundColor: '#FFD60A', pointBorderColor: isLight() ? '#fff' : '#0A0A0A', tension: .35, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 }] },
     options: { responsive: true, maintainAspectRatio: false, scales: { x: axisOpt, y: axisOpt }, plugins: { legend: { labels: { color: '#a3a3a3', usePointStyle: true } } } } }), 0);
@@ -1380,9 +1414,10 @@ function renderMoney() {
   $('acc-total').textContent = money(totalBalance());
   $('acc-list').innerHTML = state.accounts.length ? state.accounts.map(a => `<div class="row"><div class="p-2 rounded-xl tone"><i data-lucide="landmark" class="w-4 h-4"></i></div>
       <div class="flex-1 min-w-0 font-semibold truncate cursor-pointer" onclick="openEditor('account','${a.id}')">${esc(a.name)}</div>
-      <input type="number" step="0.01" value="${(+a.balance || 0).toFixed(2)}" onchange="updBalance('${a.id}', this.value)" class="inp inp-sm money-in !text-white" title="Saldo">
+      <input type="text" inputmode="decimal" autocomplete="off" value="${brIn(a.balance)}" onchange="updBalance('${a.id}', this.value)" class="inp inp-sm money money-in !text-white" title="Saldo">
       ${editBtn('account', a.id)}${delBtn('account', a.id)}</div>`).join('')
     : emptyBox('Nenhuma conta cadastrada.', `<button class="chip hover:bg-white/10" onclick="openEditor('account')">+ Nova conta</button>`);
+  renderMoves();
   if (ui.money === 'inv') renderInvest();
 }
 
@@ -1402,6 +1437,137 @@ function renderRules() {
     <button class="ibtn del" onclick="setRule('${k}','')" title="Apagar regra"><i data-lucide="x" class="w-4 h-4"></i></button></div>`).join('')
     : '<p class="text-sm text-neutral-500 text-center py-6">Nenhuma regra ainda.</p>';
   icons();
+}
+
+/* ================= PAGAMENTO DE FATURA (sai das contas guardadas) ================= */
+// state.invoicePays = [{ id, ym, card, amount, date, parts: [{ accountId, name, amount }], noDebit }]
+// Cada fatura (mês + cartão) pode ser paga com dinheiro de uma ou várias contas.
+const cardsIn = ym => { const o = {}; itemsOf(ym).forEach(c => { const k = c.tag || mainCard(); o[k] = (o[k] || 0) + c.amount; }); return o; };
+const paysOf = (ym, card) => state.invoicePays.filter(p => p.ym === ym && (!card || p.card === card));
+const paidOf = (ym, card) => r2(sum(paysOf(ym, card), p => p.amount));
+function dueDate(ym, card) { const [y, m] = ym.split('-').map(Number), c = cfgFor(ym, card); return new Date(y, m - 1, Math.min(c.due, new Date(y, m, 0).getDate())); }
+function closeDate(ym, card) { const [y, m] = ym.split('-').map(Number), c = cfgFor(ym, card); return new Date(y, m - 1, Math.max(1, c.closing)); }
+const today0 = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
+const fd2 = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+// Situação de pagamento de uma fatura de um cartão
+function payInfo(ym, card) {
+  const total = r2(cardsIn(ym)[card] || 0), paid = paidOf(ym, card), left = r2(Math.max(0, total - paid));
+  return { total, paid, left, done: total > 0 && left < 0.01, pays: paysOf(ym, card) };
+}
+// Quanto da fatura de um mês já saiu das contas (não pode ser descontado de novo na projeção)
+const paidCapped = ym => sum(Object.entries(cardsIn(ym)), ([c, t]) => Math.min(t, paidOf(ym, c)));
+// Fatura do mês atual que ainda vai sair das contas (até o vencimento)
+function dueNow() {
+  const ym = curYM(), t = today0(); let v = 0;
+  Object.entries(cardsIn(ym)).forEach(([c, tot]) => { if (dueDate(ym, c) >= t) v += Math.max(0, tot - paidOf(ym, c)); });
+  return r2(v);
+}
+// Faturas que pedem confirmação: já fecharam e venceram há no máximo 7 dias (ou ainda vão vencer)
+function pendingPays() {
+  const t = today0(), out = [];
+  [-1, 0, 1].forEach(i => { const ym = ymAdd(curYM(), i);
+    Object.keys(cardsIn(ym)).forEach(c => { const p = payInfo(ym, c), due = dueDate(ym, c);
+      if (!p.done && p.left > 0 && closeDate(ym, c) < t && (due - t) / 864e5 >= -7) out.push({ ym, card: c, ...p, due }); }); });
+  return out;
+}
+
+let pay = null;
+function openPay(ym, card) {
+  const cards = Object.keys(cardsIn(ym)); if (!cards.length) return toast('Essa fatura não tem lançamentos.', true);
+  card = card && cards.includes(card) ? card : (cards.find(c => !payInfo(ym, c).done) || cards[0]);
+  const p = payInfo(ym, card);
+  pay = { ym, card };
+  // Sugestão: tira primeiro das contas com mais saldo
+  let rest = p.left; const sug = {};
+  [...state.accounts].sort((a, b) => b.balance - a.balance).forEach(a => { const v = Math.min(rest, Math.max(0, a.balance)); if (v > 0) { sug[a.id] = r2(v); rest = r2(rest - v); } });
+  if (rest > 0 && state.accounts[0]) sug[state.accounts[0].id] = r2((sug[state.accounts[0].id] || 0) + rest);
+  const accRows = state.accounts.map(a => `<div class="row !py-2.5 !gap-2.5"><span class="p-2 rounded-xl tone hidden sm:block"><i data-lucide="landmark" class="w-4 h-4"></i></span>
+      <div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(a.name)}</div><div class="text-xs text-neutral-500" id="pay-left-${a.id}">Saldo ${money(a.balance)}</div></div>
+      <input class="inp inp-sm money money-in" type="text" inputmode="decimal" autocomplete="off" data-acc="${a.id}" value="${sug[a.id] ? brIn(sug[a.id]) : ''}" placeholder="0,00" oninput="payCalc()">
+      <button type="button" class="chip" onclick="payFill('${a.id}')" title="Usar esta conta para o que falta">Restante</button></div>`).join('');
+  showModal(head(`Pagar fatura de ${ymLong(ym)}`, 'Escolha de quais contas saiu o dinheiro. Os valores são descontados do saldo guardado.')
+    + `<div class="space-y-4">
+      ${cards.length > 1 ? fld('Cartão', `<select class="inp" id="pay-card" onchange="openPay('${ym}', this.value)">${cards.map(c => { const x = payInfo(ym, c); return `<option value="${esc(c)}" ${c === card ? 'selected' : ''}>${esc(c)} · ${x.done ? 'paga ✓' : money(x.left) + ' a pagar'}</option>`; }).join('')}</select>`) : ''}
+      <div class="row" style="display:block"><div class="flex justify-between text-sm"><span class="text-neutral-400">Fatura ${esc(card)} · vence ${fd2(dueDate(ym, card))}</span><b>${money(p.total)}</b></div>
+        ${p.paid ? `<div class="flex justify-between text-sm mt-1"><span class="text-neutral-400">Já pago antes</span><span class="text-emerald-400">− ${money(p.paid)}</span></div>` : ''}</div>
+      <div class="grid grid-cols-2 gap-3">${fld('Valor pago agora (R$)', `<input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="pay-amount" value="${brIn(p.left || p.total)}" oninput="payCalc()">`)}${fld('Data do pagamento', `<input class="inp" type="date" id="pay-date" value="${today()}">`)}</div>
+      <div><label class="lbl">De onde saiu o dinheiro</label><div class="space-y-2">${accRows || '<p class="text-sm text-neutral-400">Cadastre uma conta em Guardado para usar esta opção.</p>'}</div></div>
+      <div id="pay-sum" class="rounded-xl p-3 text-sm"></div>
+      <button class="btn btn-y" id="pay-ok" onclick="confirmPay()"><i data-lucide="check" class="w-4 h-4"></i>Confirmar pagamento</button>
+      <button class="w-full text-sm text-neutral-400 underline" onclick="confirmPay(true)">Já paguei e já ajustei os saldos: só marcar como paga</button></div>`);
+  payCalc();
+}
+function payParts() { return [...document.querySelectorAll('#modal-box [data-acc]')].map(i => ({ accountId: i.dataset.acc, amount: r2(num(i.value)) })).filter(x => x.amount > 0); }
+function payFill(id) {
+  const tot = r2(num($('pay-amount').value)), others = payParts().filter(x => x.accountId !== id), rest = r2(Math.max(0, tot - sum(others, x => x.amount)));
+  const el = document.querySelector(`#modal-box [data-acc="${id}"]`); if (el) el.value = rest ? brIn(rest) : ''; payCalc();
+}
+function payCalc() {
+  if (!pay) return; const tot = r2(num($('pay-amount').value)), parts = payParts(), dist = r2(sum(parts, x => x.amount)), diff = r2(tot - dist), box = $('pay-sum');
+  state.accounts.forEach(a => { const e = $('pay-left-' + a.id), used = (parts.find(x => x.accountId === a.id) || {}).amount || 0, after = r2(a.balance - used);
+    if (e) e.innerHTML = used ? `Saldo ${money(a.balance)} → <b class="${after < 0 ? 'text-rose-400' : 'text-neutral-200'}">${money(after)}</b>` : `Saldo ${money(a.balance)}`; });
+  const ok = tot > 0 && Math.abs(diff) < 0.01;
+  box.className = `rounded-xl p-3 text-sm ${ok ? 'bg-emerald-500/10 text-emerald-300' : 'bg-amber-500/10 text-amber-300'}`;
+  box.innerHTML = ok ? `Tudo certo: ${money(dist)} saindo de ${parts.length} conta(s).`
+    : diff > 0 ? `Distribuído ${money(dist)} de ${money(tot)}. Falta indicar de onde saem <b>${money(diff)}</b>.`
+    : `Os valores das contas passam ${money(-diff)} do valor pago.`;
+  const b = $('pay-ok'); b.disabled = !ok; b.classList.toggle('opacity-40', !ok); b.classList.toggle('cursor-not-allowed', !ok);
+}
+function confirmPay(noDebit) {
+  if (!pay) return; const { ym, card } = pay, tot = r2(num($('pay-amount').value)), date = $('pay-date').value || today();
+  if (!(tot > 0)) return toast('Informe o valor pago.', true);
+  let parts = [];
+  if (!noDebit) {
+    parts = payParts(); if (Math.abs(sum(parts, x => x.amount) - tot) >= 0.01) return toast('A soma das contas precisa ser igual ao valor pago.', true);
+    const neg = parts.filter(x => { const a = state.accounts.find(y => y.id === x.accountId); return a && a.balance - x.amount < -0.005; });
+    if (neg.length && !confirm(`${neg.map(x => state.accounts.find(y => y.id === x.accountId).name).join(', ')} vai ficar com saldo negativo. Confirmar mesmo assim?`)) return;
+    parts.forEach(x => { const a = state.accounts.find(y => y.id === x.accountId); x.name = a.name; a.balance = r2(a.balance - x.amount); });
+  }
+  state.invoicePays.push({ id: uid(), ym, card, amount: tot, date, parts, noDebit: !!noDebit });
+  pay = null; closeModal(); save();
+  toast(noDebit ? `Fatura ${card} de ${ymShort(ym)} marcada como paga.` : `Pagamento registrado: ${money(tot)} descontado de ${parts.map(x => x.name).join(' + ')}.`);
+}
+function undoPay(id) {
+  const p = state.invoicePays.find(x => x.id === id); if (!p) return;
+  if (!confirm(`Desfazer o pagamento de ${money(p.amount)} da fatura ${p.card} de ${ymShort(p.ym)}?${p.noDebit ? '' : '\nOs valores voltam para as contas.'}`)) return;
+  let miss = [];
+  if (!p.noDebit) p.parts.forEach(x => { const a = state.accounts.find(y => y.id === x.accountId); if (a) a.balance = r2(a.balance + x.amount); else miss.push(x.name); });
+  state.invoicePays = state.invoicePays.filter(x => x.id !== id); save();
+  toast(miss.length ? `Pagamento desfeito. A conta ${miss.join(', ')} não existe mais; ajuste o saldo à mão.` : 'Pagamento desfeito.', !!miss.length);
+}
+const partsTxt = p => p.noDebit ? 'marcada como paga' : p.parts.map(x => `${esc(x.name)} ${money(x.amount)}`).join(' + ');
+
+// Bloco de pagamento dentro do resumo da fatura (Início e Cartões)
+function payBlock(ym, onlyCard) {
+  const cs = Object.keys(cardsIn(ym)).filter(c => !onlyCard || c === onlyCard); if (!cs.length) return '';
+  const canPay = ym <= openInvoice();
+  return `<div class="space-y-2 mt-3">${cs.map(c => { const p = payInfo(ym, c), multi = cs.length > 1 || state.cards.length > 1;
+    if (p.done) return `<div class="row !py-2.5 flex-wrap"><span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="check" class="w-4 h-4"></i></span>
+      <div class="flex-1 min-w-0 text-sm"><b>${multi ? esc(c) + ' · ' : ''}Paga</b> <span class="text-neutral-400">· ${p.pays.map(x => `${fdate(x.date)}: ${partsTxt(x)}`).join(' · ')}</span></div>
+      ${p.pays.map(x => `<button class="chip" onclick="undoPay('${x.id}')">Desfazer</button>`).join('')}</div>`;
+    const due = dueDate(ym, c), late = due < today0();
+    return `<div class="row !py-2.5 flex-wrap"><div class="flex-1 min-w-0 text-sm"><b>${multi ? esc(c) + ' · ' : ''}${p.paid ? `Falta pagar ${money(p.left)}` : `A pagar ${money(p.left)}`}</b>
+        <span class="text-neutral-400">· ${late ? 'venceu' : 'vence'} ${fd2(due)}${p.paid ? ` · já pago ${money(p.paid)}` : ''}</span></div>
+      ${canPay ? `<button class="btn btn-y !w-auto px-4 !py-2" onclick="openPay('${ym}','${esc(c)}')"><i data-lucide="wallet" class="w-4 h-4"></i>Pagar fatura</button>` : ''}</div>`; }).join('')}</div>`;
+}
+// Aviso no Início quando há fatura fechada esperando confirmação
+function renderPayBar() {
+  const b = $('pay-bar'); if (!b) return; const ps = pendingPays();
+  if (!ps.length) { b.className = 'hidden'; return; }
+  b.className = 'card !p-4 space-y-2';
+  b.innerHTML = ps.map(p => `<div class="flex items-center gap-3 flex-wrap"><span class="p-2.5 rounded-xl tone"><i data-lucide="receipt" class="w-5 h-5"></i></span>
+    <div class="flex-1 min-w-0"><b class="block">Fatura ${esc(p.card)} de ${ymLong(p.ym)}: ${money(p.left)}</b><span class="text-xs text-neutral-400">${p.due < today0() ? 'Venceu' : 'Vence'} em ${fd2(p.due)}. Já pagou? Confirme de quais contas saiu o dinheiro.</span></div>
+    <button class="btn btn-y !w-auto px-4 !py-2.5" onclick="openPay('${p.ym}','${esc(p.card)}')">Pagar fatura</button></div>`).join('');
+}
+// Histórico de movimentações nas contas (pagamentos de fatura e meses fechados)
+function renderMoves() {
+  const el = $('acc-moves'); if (!el) return;
+  const mv = [...state.invoicePays.map(p => ({ d: p.date, t: `Fatura ${p.card} de ${ymShort(p.ym)}`, s: partsTxt(p), v: -p.amount, id: p.id })),
+    ...Object.entries(state.closedMonths).map(([ym, c]) => ({ d: ym + '-28', t: `Sobra de ${ymShort(ym)} guardada`, s: esc(c.accountName), v: c.amount }))]
+    .sort((a, b) => (b.d || '').localeCompare(a.d || '')).slice(0, 12);
+  el.innerHTML = mv.length ? mv.map(m => `<div class="flex items-center gap-3 py-2.5 border-t border-white/5 first:border-0"><div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${m.t}</div><div class="text-xs text-neutral-500 truncate">${m.s}</div></div>
+      <b class="text-sm whitespace-nowrap ${m.v < 0 ? 'text-rose-400' : 'text-emerald-400'}">${m.v < 0 ? '− ' : '+ '}${money(Math.abs(m.v))}</b>${m.id ? `<button class="ibtn" onclick="undoPay('${m.id}')" title="Desfazer"><i data-lucide="undo-2" class="w-4 h-4"></i></button>` : ''}</div>`).join('')
+    : '<p class="text-sm text-neutral-500 text-center py-4">Nenhuma movimentação ainda. Pagamentos de fatura e meses fechados aparecem aqui.</p>';
 }
 
 /* ================= IMPORTAR FATURA (CSV) ================= */
@@ -1480,7 +1646,7 @@ function startImport(txt, name) {
 }
 const impDup = (r, V) => findExisting(state.cardExpenses, r, V, r.n);
 function impMonth(v) { if (v) { imp.V = v; impRender(); } }
-function impSet(i, k, v) { const r = imp.rows[i]; if (k === 'cat') r.touched = true; r[k] = (k === 'n' || k === 'of') ? Math.max(1, parseInt(v) || 1) : k === 'val' ? Math.abs(parseFloat(v) || 0) : v; if (r.n > r.of) { k === 'of' ? r.n = r.of : r.of = r.n; } }
+function impSet(i, k, v) { const r = imp.rows[i]; if (k === 'cat') r.touched = true; r[k] = (k === 'n' || k === 'of') ? Math.max(1, parseInt(v) || 1) : k === 'val' ? Math.abs(num(v)) : v; if (r.n > r.of) { k === 'of' ? r.n = r.of : r.of = r.n; } }
 function impRender() {
   const V = imp.V;
   $('imp-hint').textContent = `Fatura de ${ymLong(V)}: vence dia ${cfgFor(V, imp.tag).due}. Parcela "3 de 8" cria as 2 anteriores e as 5 futuras, sem repetir as que já existem.`;
@@ -1496,7 +1662,7 @@ function impRender() {
       <td><input class="inp !py-1.5 min-w-[160px]" value="${esc(r.title)}" onchange="impSet(${i},'title',this.value);impRender()">${dup ? (Math.abs(dup.amount - r.val) < .005 ? '<div class="text-[11px] text-white mt-1">Já lançado nesta fatura</div>' : `<div class="text-[11px] t-y mt-1">Parcela já prevista (${money(dup.amount)}): será ajustada para o valor real</div>`) : ''}${r.neg ? '<div class="text-[11px] text-neutral-500 mt-1">Crédito / pagamento / estorno</div>' : ''}${r.sub ? `<div class="text-[11px] text-white mt-1">Assinatura: ${esc(r.sub)}</div>` : ''}${r.who ? `<div class="text-[11px] text-neutral-500 mt-1">${esc(whoName(r.who))}</div>` : ''}</td>
       <td><select class="inp !py-1.5 min-w-[130px]" onchange="impSet(${i},'cat',this.value)">${opts}</select></td>
       <td><div class="flex items-center gap-1 text-neutral-500"><input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.n}" onchange="impSet(${i},'n',this.value);impRender()">/<input type="number" min="1" class="inp !w-14 !py-1.5 !px-2" value="${r.of}" onchange="impSet(${i},'of',this.value);impRender()"></div></td>
-      <td><input type="number" step="0.01" class="inp !w-28 !py-1.5" value="${r.val}" onchange="impSet(${i},'val',this.value);impRender()"></td>
+      <td><input type="text" inputmode="decimal" autocomplete="off" class="inp money !w-28 !py-1.5" value="${brIn(r.val)}" onchange="impSet(${i},'val',this.value);impRender()"></td>
       <td class="text-xs text-neutral-400 whitespace-nowrap">${info}</td></tr>`;
   }).join('');
   const sel = imp.rows.filter(r => r.chk), inv = sum(sel, r => r.val), future = sum(sel, r => r.val * (r.of - r.n));
@@ -1563,15 +1729,15 @@ function taxBreakdown(P) {
   return b;
 }
 function renderRedeem() {
-  const v = state.invest, annual = v.cdi / 100 * v.pct / 100, val = parseFloat($('inv-r-val').value) || 0, days = Math.max(1, parseInt($('inv-r-days').value) || 1);
+  const v = state.invest, annual = v.cdi / 100 * v.pct / 100, val = num($('inv-r-val').value), days = Math.max(1, parseInt($('inv-r-days').value) || 1);
   const gain = val * (Math.pow(1 + annual, days / 365) - 1), x = taxOn(gain, days), net = gain - x.iof - x.ir;
   $('inv-r-out').innerHTML = `Rendimento bruto <b>${money(gain)}</b> · IOF <b class="text-white">${money(x.iof)}</b> (${days >= 30 ? 0 : IOF_TAB[days - 1]}%) · IR <b class="text-white">${money(x.ir)}</b> (${(irRate(days) * 100).toString().replace('.', ',')}%) · Rendimento líquido <b class="text-emerald-400">${money(net)}</b> · Total resgatado <b class="t-y">${money(val + net)}</b>`;
 }
-function invCalc() { const g = id => parseFloat($(id).value) || 0; state.invest = { cdi: g('inv-cdi'), pct: g('inv-pct') || 100, initial: g('inv-init'), monthly: g('inv-month'), end: $('inv-end').value || state.invest.end }; save(); }
+function invCalc() { const g = id => num($(id).value); state.invest = { cdi: g('inv-cdi'), pct: g('inv-pct') || 100, initial: g('inv-init'), monthly: g('inv-month'), end: $('inv-end').value || state.invest.end }; save(); }
 function invQuick(y) { state.invest.end = ymAdd(curYM(), y * 12); save(); }
 function renderInvest() {
   const v = state.invest; if (!v.end) v.end = ymAdd(curYM(), 120);
-  [['inv-init', v.initial], ['inv-month', v.monthly], ['inv-end', v.end], ['inv-cdi', v.cdi], ['inv-pct', v.pct]].forEach(([id, x]) => { const e = $(id); if (e && document.activeElement !== e) e.value = x; });
+  [['inv-init', brIn(v.initial)], ['inv-month', brIn(v.monthly)], ['inv-end', v.end], ['inv-cdi', String(v.cdi).replace('.', ',')], ['inv-pct', String(v.pct).replace('.', ',')]].forEach(([id, x]) => { const e = $(id); if (e && document.activeElement !== e) e.value = x; });
   const [cy, cm] = curYM().split('-').map(Number), [ey, em] = v.end.split('-').map(Number), months = Math.max(1, Math.min(480, (ey - cy) * 12 + (em - cm)));
   const annual = v.cdi / 100 * v.pct / 100, rows = simulate({ initial: v.initial, monthly: v.monthly, months, annual }), L = rows[rows.length - 1];
   $('inv-k1').textContent = money(L.inv); $('inv-k2').textContent = money(L.net - L.inv); $('inv-k3').textContent = money(L.gross - L.net); $('inv-k4').textContent = money(L.net);
@@ -1713,7 +1879,7 @@ if (cloud) {
     await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
   const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
   // Cada espaço (workspaces/ID) tem seus dados e sua lista de membros. Cada parte dos dados é um documento; só o que mudou é enviado.
-  const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards', 'cardSubs', 'catRules', 'goals'];
+  const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards', 'cardSubs', 'catRules', 'goals', 'invoicePays'];
   let last = {}, ready = false, unsub = null, unsubWs = null, user = null, wid = null, ws = null, spaces = [];
   const me = () => user.email.toLowerCase();
   const stop = () => { if (unsub) unsub(); if (unsubWs) unsubWs(); unsub = unsubWs = null; ready = false; wid = null; ws = null; last = {}; };

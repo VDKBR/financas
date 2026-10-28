@@ -1,7 +1,7 @@
 // Service worker do app Finanças: permite instalar e abrir mesmo com internet fraca.
 // A página sempre tenta buscar a versão mais nova primeiro; o cache é só reserva.
 // Dados e login (Firebase/Google) NUNCA passam pelo cache.
-const CACHE = 'financas-v1';
+const CACHE = 'financas-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 const LIBS = ['cdn.tailwindcss.com', 'cdn.jsdelivr.net', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com'];
 
