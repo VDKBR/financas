@@ -487,7 +487,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
     <div data-pane="money:acc" class="card" style="--ac:#38bdf8">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
         <div><p class="text-sm text-neutral-400">Saldo total guardado</p><h3 id="acc-total" class="text-3xl font-extrabold text-white"></h3></div>
-        <button class="btn btn-y !w-auto px-4" onclick="openEditor('account')"><i data-lucide="plus" class="w-4 h-4"></i>Nova conta</button></div>
+        <div class="flex gap-2 flex-wrap"><button class="btn btn-soft !w-auto px-4" onclick="openTransfer()"><i data-lucide="arrow-left-right" class="w-4 h-4"></i>Transferir</button><button class="btn btn-y !w-auto px-4" onclick="openEditor('account')"><i data-lucide="plus" class="w-4 h-4"></i>Nova conta</button></div></div>
       <div id="acc-list" class="space-y-2.5"></div>
       <p class="text-xs text-neutral-500 mt-5">Corrija o saldo direto no campo de valor. Para somar a sobra de um mês, use "Fechar o mês" no Início.</p>
     </div>
@@ -559,7 +559,7 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','A
 let state = blank(), viewYM = null, charts = {}, cardView = null;
 const ui = { tab: 'home', cards: 'inv', plan: 'proj', money: 'acc' };
 
-function blank() { return { incomes: [], fixedExpenses: [], cardExpenses: [], projectedExpenses: [], categories: [...DEF_CATS], accounts: [], closedMonths: {}, cards: [], cardCfg: { closing: 3, due: 10, months: {} }, invest: { cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, invoiceV2: true, cardSubs: [], catRules: {}, goals: [], invoicePays: [] }; }
+function blank() { return { incomes: [], fixedExpenses: [], cardExpenses: [], projectedExpenses: [], categories: [...DEF_CATS], accounts: [], closedMonths: {}, cards: [], cardCfg: { closing: 3, due: 10, months: {} }, invest: { cdi: 13.9, pct: 100, initial: 0, monthly: 200, end: '' }, invoiceV2: true, cardSubs: [], catRules: {}, goals: [], invoicePays: [], transfers: [] }; }
 function pad(n) { return String(n).padStart(2, '0'); }
 function today() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function curYM() { return today().slice(0, 7); }
@@ -640,7 +640,7 @@ function openInvoice(name) { return invoiceMonth(today(), name); }
 function normalize(s) {
   const b = blank(), wasMigrated = !!(s && s.invoiceV2);
   s = Object.assign(b, s || {});
-  ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'accounts', 'cards', 'cardSubs', 'goals', 'invoicePays'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'accounts', 'cards', 'cardSubs', 'goals', 'invoicePays', 'transfers'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
   if (!s.categories || !s.categories.length) s.categories = [...DEF_CATS];
   if (!s.catRules || typeof s.catRules !== 'object' || Array.isArray(s.catRules)) s.catRules = {};
   s.cardCfg = Object.assign({ closing: 3, due: 10 }, s.cardCfg || {}); if (!s.cardCfg.months) s.cardCfg.months = {};
@@ -980,10 +980,10 @@ const head = (t, s = '') => `<div class="flex justify-between items-start gap-3 
 const PICKS = [['card', 'credit-card', 'Compra no cartão', 'À vista ou parcelada'], ['income', 'arrow-down-circle', 'Recebimento', 'Salário, renda extra'],
   ['fixed', 'home', 'Gasto fixo', 'Conta todo mês fora do cartão'], ['est', 'target', 'Gasto previsto', 'Mercado do mês, viagem…'],
   ['sub', 'repeat', 'Assinatura no cartão', 'Cobrança mensal no cartão'], ['goal', 'flag', 'Objetivo', 'Meta para juntar dinheiro'],
-  ['account', 'landmark', 'Conta / saldo', 'Banco ou dinheiro guardado']];
+  ['account', 'landmark', 'Conta / saldo', 'Banco ou dinheiro guardado'], ['transfer', 'arrow-left-right', 'Transferência', 'De uma conta para outra']];
 function openAdd() {
   showModal(head('O que você quer lançar?') + `<div class="grid grid-cols-2 gap-3">${PICKS.map(([t, ic, l, s]) =>
-    `<button class="pick" onclick="openEditor('${t}')"><span class="ic"><i data-lucide="${ic}" class="w-5 h-5"></i></span><b>${l}</b><span>${s}</span></button>`).join('')}
+    `<button class="pick" onclick="${t === 'transfer' ? 'openTransfer()' : `openEditor('${t}')`}"><span class="ic"><i data-lucide="${ic}" class="w-5 h-5"></i></span><b>${l}</b><span>${s}</span></button>`).join('')}
     <label class="pick cursor-pointer"><span class="ic"><i data-lucide="file-up" class="w-5 h-5"></i></span><b>Importar fatura</b><span>Arquivo .csv do banco</span><input type="file" accept=".csv,.txt" class="hidden" onchange="closeModal();openImport(event)"></label></div>`);
 }
 
@@ -1415,7 +1415,7 @@ function renderMoney() {
   $('acc-list').innerHTML = state.accounts.length ? state.accounts.map(a => `<div class="row"><div class="p-2 rounded-xl tone"><i data-lucide="landmark" class="w-4 h-4"></i></div>
       <div class="flex-1 min-w-0 font-semibold truncate cursor-pointer" onclick="openEditor('account','${a.id}')">${esc(a.name)}</div>
       <input type="text" inputmode="decimal" autocomplete="off" value="${brIn(a.balance)}" onchange="updBalance('${a.id}', this.value)" class="inp inp-sm money money-in !text-white" title="Saldo">
-      ${editBtn('account', a.id)}${delBtn('account', a.id)}</div>`).join('')
+      <button class="ibtn" onclick="openTransfer('${a.id}')" title="Transferir desta conta"><i data-lucide="arrow-left-right" class="w-4 h-4"></i></button>${editBtn('account', a.id)}${delBtn('account', a.id)}</div>`).join('')
     : emptyBox('Nenhuma conta cadastrada.', `<button class="chip hover:bg-white/10" onclick="openEditor('account')">+ Nova conta</button>`);
   renderMoves();
   if (ui.money === 'inv') renderInvest();
@@ -1562,12 +1562,61 @@ function renderPayBar() {
 // Histórico de movimentações nas contas (pagamentos de fatura e meses fechados)
 function renderMoves() {
   const el = $('acc-moves'); if (!el) return;
-  const mv = [...state.invoicePays.map(p => ({ d: p.date, t: `Fatura ${p.card} de ${ymShort(p.ym)}`, s: partsTxt(p), v: -p.amount, id: p.id })),
+  const mv = [...state.invoicePays.map(p => ({ d: p.date, t: `Fatura ${p.card} de ${ymShort(p.ym)}`, s: partsTxt(p), v: -p.amount, undo: `undoPay('${p.id}')` })),
+    ...state.transfers.map(x => ({ d: x.date, t: `Transferência: ${esc(x.fromName)} → ${esc(x.toName)}`, s: fdate(x.date) + (x.note ? ' · ' + esc(x.note) : ''), v: x.amount, tr: true, undo: `undoTransfer('${x.id}')` })),
     ...Object.entries(state.closedMonths).map(([ym, c]) => ({ d: ym + '-28', t: `Sobra de ${ymShort(ym)} guardada`, s: esc(c.accountName), v: c.amount }))]
     .sort((a, b) => (b.d || '').localeCompare(a.d || '')).slice(0, 12);
   el.innerHTML = mv.length ? mv.map(m => `<div class="flex items-center gap-3 py-2.5 border-t border-white/5 first:border-0"><div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${m.t}</div><div class="text-xs text-neutral-500 truncate">${m.s}</div></div>
-      <b class="text-sm whitespace-nowrap ${m.v < 0 ? 'text-rose-400' : 'text-emerald-400'}">${m.v < 0 ? '− ' : '+ '}${money(Math.abs(m.v))}</b>${m.id ? `<button class="ibtn" onclick="undoPay('${m.id}')" title="Desfazer"><i data-lucide="undo-2" class="w-4 h-4"></i></button>` : ''}</div>`).join('')
-    : '<p class="text-sm text-neutral-500 text-center py-4">Nenhuma movimentação ainda. Pagamentos de fatura e meses fechados aparecem aqui.</p>';
+      <b class="text-sm whitespace-nowrap ${m.tr ? 'text-white' : m.v < 0 ? 'text-rose-400' : 'text-emerald-400'}">${m.tr ? '⇄ ' : m.v < 0 ? '− ' : '+ '}${money(Math.abs(m.v))}</b>${m.undo ? `<button class="ibtn" onclick="${m.undo}" title="Desfazer"><i data-lucide="undo-2" class="w-4 h-4"></i></button>` : ''}</div>`).join('')
+    : '<p class="text-sm text-neutral-500 text-center py-4">Nenhuma movimentação ainda. Transferências, pagamentos de fatura e meses fechados aparecem aqui.</p>';
+}
+
+/* ================= TRANSFERÊNCIA ENTRE CONTAS ================= */
+// state.transfers = [{ id, from, to, fromName, toName, amount, date, note }]
+// Só move dinheiro de uma conta para outra: o saldo total guardado e a projeção não mudam.
+function openTransfer(fromId) {
+  if (state.accounts.length < 2) { toast('Cadastre pelo menos duas contas para transferir.', true); return openEditor('account'); }
+  const opt = sel => state.accounts.map(a => `<option value="${a.id}" ${a.id === sel ? 'selected' : ''}>${esc(a.name)} (${money(a.balance)})</option>`).join('');
+  // Repete a última transferência (ex.: sempre da conta dela para a sua); sem histórico, sai da conta com mais saldo
+  const has = id => state.accounts.some(a => a.id === id), last = [...state.transfers].reverse().find(x => has(x.from) && has(x.to));
+  const from = fromId || (last && last.from) || [...state.accounts].sort((a, b) => b.balance - a.balance)[0].id;
+  const to = (last && last.to !== from && has(last.to) ? last.to : null) || state.accounts.find(a => a.id !== from).id;
+  showModal(head('Transferir entre contas', 'Ex.: quando sua esposa transfere da conta dela para a sua. O valor sai de uma conta e entra na outra.')
+    + `<div class="space-y-4">
+      <div class="grid gap-2 items-end" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)">${fld('De', `<select class="inp" id="tr-from" onchange="trCalc()">${opt(from)}</select>`)}
+        <button type="button" class="ibtn !bg-white/5 mb-1.5" onclick="trSwap()" title="Inverter"><i data-lucide="arrow-left-right" class="w-4 h-4"></i></button>
+        ${fld('Para', `<select class="inp" id="tr-to" onchange="trCalc()">${opt(to)}</select>`)}</div>
+      <div class="grid grid-cols-2 gap-3">${fld('Valor (R$)', `<input class="inp money" type="text" inputmode="decimal" autocomplete="off" id="tr-amount" placeholder="0,00" oninput="trCalc()">`)}${fld('Data', `<input class="inp" type="date" id="tr-date" value="${today()}">`)}</div>
+      ${fld('Observação (opcional)', `<input class="inp" id="tr-note" maxlength="60" placeholder="Ex.: parte da fatura de novembro">`)}
+      <div id="tr-prev" class="row" style="display:block"></div>
+      <button class="btn btn-y" id="tr-ok" onclick="confirmTransfer()"><i data-lucide="arrow-left-right" class="w-4 h-4"></i>Confirmar transferência</button></div>`);
+  trCalc();
+}
+function trSwap() { const f = $('tr-from'), t = $('tr-to'), x = f.value; f.value = t.value; t.value = x; trCalc(); }
+function trCalc() {
+  const f = state.accounts.find(a => a.id === $('tr-from').value), t = state.accounts.find(a => a.id === $('tr-to').value), v = r2(num($('tr-amount').value)), box = $('tr-prev');
+  const same = f && t && f.id === t.id, ok = f && t && !same && v > 0;
+  box.innerHTML = same ? '<p class="text-sm text-amber-300">Escolha contas diferentes em "De" e "Para".</p>'
+    : `<div class="flex justify-between text-sm"><span class="text-neutral-400">${esc(f.name)}</span><span>${money(f.balance)} → <b class="${f.balance - v < 0 ? 'text-rose-400' : 'text-neutral-100'}">${money(f.balance - v)}</b></span></div>
+       <div class="flex justify-between text-sm mt-1.5"><span class="text-neutral-400">${esc(t.name)}</span><span>${money(t.balance)} → <b class="text-emerald-400">${money(t.balance + v)}</b></span></div>
+       <p class="text-xs text-neutral-500 mt-2">O saldo total guardado continua ${money(totalBalance())}.</p>`;
+  const b = $('tr-ok'); b.disabled = !ok; b.classList.toggle('opacity-40', !ok); b.classList.toggle('cursor-not-allowed', !ok);
+}
+function confirmTransfer() {
+  const f = state.accounts.find(a => a.id === $('tr-from').value), t = state.accounts.find(a => a.id === $('tr-to').value), v = r2(num($('tr-amount').value));
+  if (!f || !t || f.id === t.id || !(v > 0)) return toast('Confira as contas e o valor.', true);
+  if (f.balance - v < -0.005 && !confirm(`${f.name} vai ficar com saldo negativo (${money(f.balance - v)}). Confirmar mesmo assim?`)) return;
+  f.balance = r2(f.balance - v); t.balance = r2(t.balance + v);
+  state.transfers.push({ id: uid(), from: f.id, to: t.id, fromName: f.name, toName: t.name, amount: v, date: $('tr-date').value || today(), note: $('tr-note').value.trim() });
+  closeModal(); save(); toast(`${money(v)} transferido de ${f.name} para ${t.name}.`);
+}
+function undoTransfer(id) {
+  const x = state.transfers.find(y => y.id === id); if (!x) return;
+  if (!confirm(`Desfazer a transferência de ${money(x.amount)} de ${x.fromName} para ${x.toName}?`)) return;
+  const f = state.accounts.find(a => a.id === x.from), t = state.accounts.find(a => a.id === x.to);
+  if (f) f.balance = r2(f.balance + x.amount); if (t) t.balance = r2(t.balance - x.amount);
+  state.transfers = state.transfers.filter(y => y.id !== id); save();
+  toast(f && t ? 'Transferência desfeita.' : 'Transferência desfeita. Uma das contas não existe mais; confira o saldo.', !(f && t));
 }
 
 /* ================= IMPORTAR FATURA (CSV) ================= */
@@ -1879,7 +1928,7 @@ if (cloud) {
     await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
   const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
   // Cada espaço (workspaces/ID) tem seus dados e sua lista de membros. Cada parte dos dados é um documento; só o que mudou é enviado.
-  const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards', 'cardSubs', 'catRules', 'goals', 'invoicePays'];
+  const KEYS = ['incomes', 'fixedExpenses', 'cardExpenses', 'projectedExpenses', 'categories', 'accounts', 'closedMonths', 'cardCfg', 'invest', 'cards', 'cardSubs', 'catRules', 'goals', 'invoicePays', 'transfers'];
   let last = {}, ready = false, unsub = null, unsubWs = null, user = null, wid = null, ws = null, spaces = [];
   const me = () => user.email.toLowerCase();
   const stop = () => { if (unsub) unsub(); if (unsubWs) unsubWs(); unsub = unsubWs = null; ready = false; wid = null; ws = null; last = {}; };
