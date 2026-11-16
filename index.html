@@ -409,6 +409,7 @@ window.FIREBASE_CONFIG = { apiKey: "AIzaSyB0y0W5ZPveIm9edGK--F3u8l97bt2PcVA",
       <div class="flex flex-wrap gap-2">
         <label class="btn btn-y !w-auto px-4 cursor-pointer"><i data-lucide="file-up" class="w-4 h-4"></i>Importar fatura (.csv)<input type="file" class="hidden" onchange="openImport(event)"></label>
         <button id="imp-undo" class="btn !w-auto px-4 btn-soft hidden" onclick="undoImport()"><i data-lucide="undo-2" class="w-4 h-4"></i><span id="imp-undo-lbl">Desfazer importação</span></button>
+        <button id="bulk-undo" class="btn !w-auto px-4 btn-soft hidden" onclick="undoBulkDelete()"><i data-lucide="undo-2" class="w-4 h-4"></i><span id="bulk-undo-lbl">Desfazer exclusão</span></button>
       </div>
     </div>
     <div class="seg" data-seg="cards"></div>
@@ -1340,6 +1341,7 @@ function renderCardMonth() {
   let h = `<div class="row flex-wrap justify-between mb-3"><div><div class="text-xs text-neutral-400">${label}${filt ? ' · ' + esc(filt) : ''}</div><b class="text-2xl text-white">${money(total)}</b></div>
     <div class="flex gap-2 flex-wrap"><span class="chip">À vista ${money(total - parc)}</span><span class="chip">Parcelas ${money(parc)}</span></div></div>`;
   if (cf.mode === 'month' && !cf.cat && !cf.who && !cf.q) h += `<div class="mb-4 -mt-1">${payBlock(cardView, cf.card || null)}</div>`;
+  if (cf.mode === 'month' && state.cardExpenses.some(c => c.month === cardView)) h += `<div class="flex justify-end -mt-1 mb-4"><button class="chip hover:!text-rose-300" onclick="openBulkDelete('${cardView}', '${esc(cf.card || '')}')"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Apagar lançamentos desta fatura…</button></div>`;
   if (cf.mode === 'month') { const next = [1, 2, 3, 4].map(i => ymAdd(cardView, i)).filter(m => tm(m)).map(m => `<button class="chip hover:bg-white/10" onclick="cardView='${m}';renderCardMonth();icons()">${ymShort(m)}: ${money(tm(m))}</button>`).join('');
     if (next) h += `<div class="flex flex-wrap items-center gap-2 mb-5 text-xs text-neutral-400">Próximas faturas: ${next}</div>`; }
   const keyOf = { cat: c => c.category, card: c => c.tag, who: c => whoName(c.who) || 'Sem pessoa', month: c => c.month, none: () => 'Lançamentos' }[cf.group], by = {};
@@ -1738,7 +1740,53 @@ function confirmImport() {
 }
 // Desfaz a importação mais recente (pode repetir para voltar outras)
 function lastImportId() { let b = ''; state.cardExpenses.forEach(c => { if (c.imp && c.imp > b) b = c.imp; if (c.impPrev && c.impPrev.bid > b) b = c.impPrev.bid; }); return b; }
+
+/* ================= APAGAR VÁRIOS LANÇAMENTOS DE UMA VEZ ================= */
+// Apaga os lançamentos de uma fatura (mês) de um cartão ou de todos. Parcelas: só a parcela deste mês;
+// as dos outros meses continuam (a reimportação do CSV recria a deste mês sem duplicar as outras).
+let bulkUndo = null;
+function bulkItems(ym, card, kind) {
+  return state.cardExpenses.filter(c => c.month === ym && (!card || c.tag === card) && (kind === 'all' || (kind === 'avista' ? (c.of || 1) === 1 : (c.of || 1) > 1)));
+}
+function openBulkDelete(ym, card) {
+  const cards = [...new Set(state.cardExpenses.filter(c => c.month === ym).map(c => c.tag))];
+  showModal(head(`Apagar lançamentos de ${ymLong(ym)}`, 'Útil quando a fatura ficou duplicada: apague tudo e importe o arquivo da fatura de novo.')
+    + `<div class="space-y-4">
+      ${fld('Cartão', `<select class="inp" id="bd-card" onchange="bulkCalc()"><option value="">Todos os cartões</option>${cards.map(c => `<option ${c === card ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`)}
+      ${fld('Quais lançamentos', `<select class="inp" id="bd-kind" onchange="bulkCalc()"><option value="all">Todos (à vista e parcelas)</option><option value="avista">Só compras à vista</option><option value="parc">Só parcelas</option></select>`)}
+      <div id="bd-prev" class="row" style="display:block"></div>
+      <p class="text-xs text-neutral-500">Compras parceladas: apaga só a parcela desta fatura. As parcelas dos outros meses continuam. Assinaturas previstas e pagamentos de fatura não são afetados.</p>
+      <button class="btn !bg-rose-600 !text-white" id="bd-ok" onclick="confirmBulkDelete('${ym}')"><i data-lucide="trash-2" class="w-4 h-4"></i>Apagar</button></div>`);
+  bulkCalc();
+}
+function bulkCalc() {
+  const ym = (document.getElementById('bd-ok').getAttribute('onclick').match(/'(\d{4}-\d{2})'/) || [])[1], items = bulkItems(ym, $('bd-card').value, $('bd-kind').value);
+  const byCat = {}; items.forEach(c => byCat[c.category] = (byCat[c.category] || 0) + c.amount);
+  $('bd-prev').innerHTML = items.length ? `<div class="flex justify-between"><span class="text-neutral-400">Serão apagados</span><b>${items.length} lançamento(s) · ${money(sum(items, c => c.amount))}</b></div>
+      <div class="text-xs text-neutral-500 mt-2">${Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => `${esc(k)} ${money(v)}`).join(' · ')}</div>`
+    : '<p class="text-sm text-neutral-400">Nenhum lançamento com essa escolha.</p>';
+  const b = $('bd-ok'); b.disabled = !items.length; b.classList.toggle('opacity-40', !items.length);
+  b.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4"></i>Apagar ${items.length} lançamento(s)`; icons();
+}
+function confirmBulkDelete(ym) {
+  const card = $('bd-card').value, items = bulkItems(ym, card, $('bd-kind').value); if (!items.length) return;
+  if (!confirm(`Apagar ${items.length} lançamento(s) da fatura de ${ymLong(ym)}${card ? ' do cartão ' + card : ''} (${money(sum(items, c => c.amount))})?`)) return;
+  const ids = new Set(items.map(c => c.id));
+  bulkUndo = { items: items.map(c => ({ ...c })), ym, card, idx: state.cardExpenses.map((c, i) => ids.has(c.id) ? i : -1).filter(i => i >= 0) };
+  state.cardExpenses = state.cardExpenses.filter(c => !ids.has(c.id));
+  closeModal(); save(); toast(`${items.length} lançamento(s) apagados. Se foi engano, use "Desfazer exclusão" no topo de Cartões.`);
+}
+function undoBulkDelete() {
+  if (!bulkUndo) return; const have = new Set(state.cardExpenses.map(c => c.id)), back = bulkUndo.items.filter(c => !have.has(c.id));
+  state.cardExpenses.push(...back); const n = back.length; bulkUndo = null; save(); toast(`${n} lançamento(s) restaurados.`);
+}
+function renderBulkUndo() {
+  const b = $('bulk-undo'); if (!b) return; b.classList.toggle('hidden', !bulkUndo);
+  if (bulkUndo) $('bulk-undo-lbl').textContent = `Desfazer exclusão (${bulkUndo.items.length} de ${ymShort(bulkUndo.ym)})`;
+}
+
 function renderUndo() {
+  renderBulkUndo();
   const b = lastImportId(), btn = $('imp-undo'); if (!btn) return; btn.classList.toggle('hidden', !b); if (!b) return;
   const one = state.cardExpenses.find(c => c.imp === b); $('imp-undo-lbl').textContent = one ? `Desfazer importação (${ymShort(one.impV)})` : 'Desfazer importação';
 }
